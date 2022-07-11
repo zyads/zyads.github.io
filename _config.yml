@@ -53,6 +53,8 @@ topics:
     image_url: https://upload.wikimedia.org/wikipedia/commons/1/18/ISO_C%2B%2B_Logo.svg
 
   - name: Web design
+    web_url: https://github.com/topics/js
+    image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/800px-JavaScript-logo.png?20120221235433
 
   - name: Python
     web_url: https://github.com/topics/python
