@@ -32,7 +32,7 @@ social_media:
   # behance: your_username
   # dribbble: your_username
   # facebook: your_username
-  github: zyads
+  github: zyads #doesnt work!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   # hackerrank: your_username
   # instagram: your_username
   # keybase: your_username
@@ -56,4 +56,4 @@ topics:
 
   - name: Python
     web_url: https://github.com/topics/python
-    image_url: 
+    image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/165px-Python-logo-notext.svg.png?20100317150552
