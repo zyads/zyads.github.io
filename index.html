@@ -384,79 +384,100 @@
   @keyframes scroll-l { to { transform: translateX(calc(-100% - 2.5rem)); } }
   @keyframes scroll-r { from { transform: translateX(calc(-100% - 2.5rem)); } to { transform: none; } }
 
-  /* ---------- build log (blog) ---------- */
-  .log-note {
+  /* ---------- live repo stats on project cards ---------- */
+  .gh-live {
+    margin-top: 1.05rem; min-height: 1.3em;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1.05rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.74rem; color: var(--faint);
+  }
+  .gh-live .v { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .gh-live .star { color: #fbbf24; }
+  .gh-live .lang-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 0.4rem;
+    background: var(--c2);
+    box-shadow: 0 0 8px rgba(139,140,248,0.8);
+  }
+  .gh-live .shimmer {
+    display: inline-block; height: 0.85em; border-radius: 5px;
+    background: linear-gradient(90deg, rgba(148,163,184,0.08), rgba(148,163,184,0.22), rgba(148,163,184,0.08));
+    background-size: 200% 100%;
+    animation: shim 1.3s linear infinite;
+  }
+  @keyframes shim { to { background-position: -200% 0; } }
+
+  /* ---------- live terminal ---------- */
+  .term-note {
     margin: calc(-1 * clamp(1rem, 3vw, 2rem)) 0 2.2rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.82rem; color: var(--faint);
     max-width: 52rem; line-height: 1.7;
   }
-  .log-note .prompt { color: var(--c1); }
-  .log-note a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
-  .log-note a:hover { color: var(--c1); }
-  .post {
-    position: relative;
+  .term-note .prompt { color: var(--c1); }
+  .term {
     border: 1px solid var(--line);
     border-radius: 18px;
-    background: var(--card);
-    padding: 1.6rem 1.7rem 1.5rem;
+    background: #070b14;
     overflow: hidden;
     transition: border-color 0.35s ease, box-shadow 0.35s ease;
   }
-  .post:hover { border-color: rgba(74,222,128,0.35); box-shadow: 0 18px 50px -20px rgba(74,222,128,0.18); }
-  .post + .post { margin-top: 1.2rem; }
-  .post .meta {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem;
-    font-size: 0.78rem; color: var(--faint);
+  .term:focus-within, .term:hover {
+    border-color: rgba(56,224,255,0.35);
+    box-shadow: 0 24px 70px -30px rgba(56,224,255,0.25);
   }
-  .post .meta .ok { color: #4ade80; text-shadow: 0 0 10px rgba(74,222,128,0.7); font-size: 0.6rem; }
-  .post .meta a { color: var(--faint); text-decoration: underline; text-underline-offset: 3px; }
-  .post .meta a:hover { color: var(--c1); }
-  .post h3 { margin-top: 0.5rem; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
-  .post .body p { margin-top: 0.65rem; color: var(--muted); font-size: 0.96rem; max-width: 50rem; }
-  .post .body ul { margin: 0.65rem 0 0 1.2rem; color: var(--muted); font-size: 0.96rem; }
-  .post .body li::marker { color: var(--c2); }
-  .post .body pre {
-    margin-top: 0.8rem; padding: 0.9rem 1.1rem;
-    background: #070b14; border: 1px solid var(--line); border-radius: 12px;
-    overflow-x: auto; font-size: 0.82rem; line-height: 1.55; color: var(--muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  .term-bar {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.7rem 1.05rem;
+    background: rgba(148,163,184,0.05);
+    border-bottom: 1px solid var(--line);
   }
-  .post .body code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.85em; color: var(--c1);
-    background: rgba(56,224,255,0.07);
-    border: 1px solid rgba(56,224,255,0.15);
-    border-radius: 5px; padding: 0.08em 0.35em;
+  .term-bar .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .term-bar .dot.r { background: rgba(248,115,115,0.55); }
+  .term-bar .dot.y { background: rgba(251,191,36,0.55); }
+  .term-bar .dot.g { background: rgba(74,222,128,0.55); }
+  .term-title {
+    margin-left: 0.6rem;
+    font-size: 0.72rem; color: var(--faint); letter-spacing: 0.04em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .post .body pre code { color: inherit; background: none; border: 0; padding: 0; }
-  .pipe {
-    margin-top: 1.2rem;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
-    font-size: 0.72rem;
+  .term-body {
+    padding: 1.05rem 1.2rem;
+    min-height: 300px; max-height: 420px;
+    overflow-y: auto; overscroll-behavior: contain;
+    font-size: 0.8rem; line-height: 1.85;
+    color: var(--muted);
+    white-space: pre-wrap; word-break: break-word;
   }
-  .pipe .sep { color: var(--faint); }
-  .pipe .st {
-    border: 1px solid var(--line);
-    border-radius: 7px;
-    padding: 0.18rem 0.65rem;
-    color: var(--faint);
-    transition: color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
-    transition-delay: var(--pd, 0s);
+  .term-body .row { display: block; min-height: 1.85em; }
+  .t-cmd { color: var(--c1); }
+  .t-ok { color: #4ade80; text-shadow: 0 0 12px rgba(74,222,128,0.35); }
+  .t-err { color: var(--c3); }
+  .t-repo { color: var(--c2); }
+  .t-type { color: var(--c1); }
+  .t-time, .t-dim { color: var(--faint); }
+  .t-cursor {
+    display: inline-block; width: 0.55em; height: 1.05em;
+    margin-left: 1px; vertical-align: text-bottom;
+    background: var(--c1);
+    animation: blink 1.05s steps(1) infinite;
   }
-  .pipe .st::before {
-    content: "\2713 ";
-    color: #4ade80;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    transition-delay: calc(var(--pd, 0s) + 0.2s);
+  .term-input {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.75rem 1.2rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.8rem;
   }
-  .reveal.in .pipe .st, html:not(.js) .pipe .st {
-    color: #a7f3d0;
-    border-color: rgba(74,222,128,0.45);
-    box-shadow: 0 0 14px rgba(74,222,128,0.12);
+  .term-input label { color: var(--faint); white-space: nowrap; cursor: text; }
+  .term-input label .p1 { color: var(--c3); }
+  .term-input input {
+    flex: 1; min-width: 0;
+    background: none; border: 0; outline: none;
+    color: var(--text); font: inherit;
+    caret-color: var(--c1);
   }
-  .reveal.in .pipe .st::before, html:not(.js) .pipe .st::before { opacity: 1; }
+  .term-input input::placeholder { color: var(--faint); opacity: 0.65; }
+  @media (max-width: 560px) { .term-input input::placeholder { color: transparent; } }
 
   /* ---------- education ---------- */
   .edu {
@@ -523,7 +544,7 @@
       <li><a href="#about">About</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#experience">Experience</a></li>
-      <li><a href="#log">Log</a></li>
+      <li><a href="#live">Live</a></li>
       <li class="hide-s"><a class="ext" href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
     </ul>
   </nav>
@@ -576,12 +597,14 @@
           <h3><a href="https://github.com/zyads/heddle">Heddle</a></h3>
           <p>Version control for many hands moving at once &mdash; intent leases, stitches, and a green-by-construction fabric above git, built for teams of humans and agents committing in parallel.</p>
           <div class="tags"><span>git</span><span>devtools</span><span>concurrency</span></div>
+          <div class="gh-live" data-repo="zyads/heddle" aria-label="Live repository stats"></div>
           <a class="go" href="https://github.com/zyads/heddle">View on GitHub <span class="arrow" aria-hidden="true">&#8599;</span></a>
         </article>
         <article class="card tilt reveal" style="--d:0.23s">
           <h3><a href="https://github.com/zyads/arbor">Arbor</a></h3>
           <p>Research code testing whether dendritic depth can substitute for transformer depth &mdash; shallow networks of deep neurons, benchmarked against conventional architectures.</p>
           <div class="tags"><span>ML research</span><span>PyTorch</span><span>architectures</span></div>
+          <div class="gh-live" data-repo="zyads/arbor" aria-label="Live repository stats"></div>
           <a class="go" href="https://github.com/zyads/arbor">View on GitHub <span class="arrow" aria-hidden="true">&#8599;</span></a>
         </article>
       </div>
@@ -631,21 +654,22 @@
     </div>
   </section>
 
-  <section id="log" aria-labelledby="log-h">
+  <section id="live" aria-labelledby="live-h">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">04</span><h2 id="log-h">Build Log</h2></div>
-      <p class="log-note reveal"><span class="prompt">$</span> gh issue create --title "post: ..." <span class="prompt">&rarr;</span> a GitHub Action renders the issue into this page, commits it, redeploys the site, and closes the issue with the live link. Every entry below is a merged pipeline run with a paper trail. <a href="https://github.com/zyads/zyads.github.io/blob/master/.github/workflows/publish-post.yml">Read the pipeline</a>.</p>
-      <!-- POSTS:START -->
-      <article class="post reveal">
-        <div class="meta mono"><span class="ok">&#9679;</span> run #001 &middot; 2026-08-01 &middot; genesis commit</div>
-        <h3>This page publishes itself</h3>
-        <div class="body">
-          <p>Every post in this log starts life as a GitHub Issue on this repo. When I open one titled <code>post: ...</code> (or label one <code>post</code>), a GitHub Action wakes up: it renders the issue body into the HTML you are reading right now, commits the change back to master as a bot, redeploys the site through GitHub Pages, then comments the live URL on the issue and closes it.</p>
-          <p>No CMS, no database, no build framework &mdash; the pipeline is one workflow file and one stdlib-only Python script. The blog is a build artifact, every entry links back to the issue it was born as, and the whole edit history is public. This entry is the only one that was committed by hand; it had to exist before the machine could write the rest.</p>
+      <div class="sec-head reveal"><span class="idx">04</span><h2 id="live-h">Live from GitHub</h2></div>
+      <p class="term-note reveal"><span class="prompt">$</span> This terminal is real. When it scrolls into view, your browser calls the GitHub API directly &mdash; unauthenticated, read-only &mdash; and tails my public activity. The prompt at the bottom works too: <span class="prompt">whois &lt;username&gt;</span> looks up any GitHub account, live.</p>
+      <div class="term reveal" id="term">
+        <div class="term-bar" aria-hidden="true">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="term-title mono">zyad@github:~ &mdash; tail -f events/public</span>
         </div>
-        <div class="pipe mono" aria-hidden="true"><span class="st" style="--pd:0s">issue</span><span class="sep">&rarr;</span><span class="st" style="--pd:0.3s">action</span><span class="sep">&rarr;</span><span class="st" style="--pd:0.6s">render</span><span class="sep">&rarr;</span><span class="st" style="--pd:0.9s">commit</span><span class="sep">&rarr;</span><span class="st" style="--pd:1.2s">deploy</span></div>
-      </article>
-      <!-- POSTS:END -->
+        <div class="term-body mono" id="term-body" role="log" aria-label="Live GitHub activity feed"></div>
+        <form class="term-input mono" id="term-form">
+          <label for="term-cmd"><span class="p1">visitor</span>@web:~$</label>
+          <input id="term-cmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="60"
+                 placeholder="whois &lt;github-username&gt; &middot; try: whois torvalds" aria-label="Terminal command. Type whois followed by a GitHub username and press Enter.">
+        </form>
+      </div>
     </div>
   </section>
 
@@ -671,7 +695,7 @@
       <a href="https://github.com/zyads" rel="me">GitHub</a>
       <a href="https://linkedin.com/in/zyads" rel="me">LinkedIn</a>
     </nav>
-    <span>Hand-built &mdash; vanilla JS, zero external requests, no trackers.</span>
+    <span>Hand-built &mdash; vanilla JS, no trackers. The only thing this page talks to is api.github.com, read-only.</span>
   </div>
 </footer>
 
@@ -947,7 +971,7 @@
         }
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
-    ['about', 'projects', 'experience', 'log'].forEach(function (id) {
+    ['about', 'projects', 'experience', 'live'].forEach(function (id) {
       var el = doc.getElementById(id);
       if (el) secIo.observe(el);
     });
@@ -1096,6 +1120,331 @@
     }
   }
 
+  /* ============================================================
+     Live GitHub layer — unauthenticated, read-only, rate-capped.
+     Everything from the API is untrusted: rendered with
+     textContent only, email-shaped strings redacted.
+     ============================================================ */
+  var ghSupported = !!(window.fetch && window.Promise && window.sessionStorage);
+  var gh = {
+    budget: 12, /* hard cap on live API calls per page view */
+    clean: function (v) {
+      return String(v == null ? '' : v)
+        .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+/g, '[redacted]');
+    },
+    get: function (path) {
+      var key = 'gh:' + path;
+      try {
+        var hit = sessionStorage.getItem(key);
+        if (hit) return Promise.resolve(JSON.parse(hit));
+      } catch (e) { /* storage disabled — fall through to network */ }
+      if (!ghSupported) return Promise.reject(new Error('unsupported'));
+      if (gh.budget <= 0) return Promise.reject(new Error('budget'));
+      gh.budget--;
+      return fetch('https://api.github.com' + path, {
+        headers: { 'Accept': 'application/vnd.github+json' }
+      }).then(function (r) {
+        if (!r.ok) { var e = new Error('http ' + r.status); e.status = r.status; throw e; }
+        return r.json();
+      }).then(function (data) {
+        try { sessionStorage.setItem(key, JSON.stringify(data)); } catch (e) { /* fine */ }
+        return data;
+      });
+    },
+    ago: function (iso) {
+      var t = Date.parse(iso);
+      if (!isFinite(t)) return '';
+      var s = Math.max(0, (Date.now() - t) / 1000);
+      if (s < 60) return 'just now';
+      if (s < 3600) return Math.floor(s / 60) + 'm ago';
+      if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+      if (s < 2592000) return Math.floor(s / 86400) + 'd ago';
+      if (s < 31536000) return Math.floor(s / 2592000) + 'mo ago';
+      return Math.floor(s / 31536000) + 'y ago';
+    },
+    fmt: function (n) {
+      return String(Number(n) || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+  };
+
+  function mkSeg(parent, text, cls) {
+    var s = doc.createElement('span');
+    if (cls) s.className = cls;
+    s.textContent = text;
+    parent.appendChild(s);
+    return s;
+  }
+
+  function onceVisible(el, threshold, fn) {
+    if (!('IntersectionObserver' in window)) { fn(); return; }
+    new IntersectionObserver(function (entries, obs) {
+      if (entries[0].isIntersecting) { obs.disconnect(); fn(); }
+    }, { threshold: threshold }).observe(el);
+  }
+
+  /* ============================================================
+     Live stars / forks / language / last-push on project cards
+     ============================================================ */
+  function initLiveCards() {
+    var slots = doc.querySelectorAll('.gh-live[data-repo]');
+    if (!slots.length || !ghSupported) return;
+
+    function countUp(el, target) {
+      target = Number(target) || 0;
+      if (reduced || target === 0) { el.textContent = gh.fmt(target); return; }
+      var start = null, dur = 900;
+      function frame(ts) {
+        if (start === null) start = ts;
+        var p = Math.min(1, (ts - start) / dur);
+        el.textContent = gh.fmt(Math.round(target * (1 - Math.pow(1 - p, 3))));
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function load(slot) {
+      slot.textContent = '';
+      [36, 30, 58].forEach(function (w) {
+        mkSeg(slot, '', 'shimmer').style.width = w + 'px';
+      });
+      gh.get('/repos/' + slot.getAttribute('data-repo')).then(function (repo) {
+        slot.textContent = '';
+        var s1 = mkSeg(slot, '', '');
+        mkSeg(s1, '★ ', 'star');
+        countUp(mkSeg(s1, '0', 'v'), repo.stargazers_count);
+        var s2 = mkSeg(slot, '', '');
+        mkSeg(s2, '⑂ ', 't-dim');
+        mkSeg(s2, gh.fmt(repo.forks_count), 'v');
+        if (repo.language) {
+          var s3 = mkSeg(slot, '', '');
+          s3.appendChild(doc.createElement('i')).className = 'lang-dot';
+          mkSeg(s3, gh.clean(repo.language), 'v');
+        }
+        if (repo.pushed_at) mkSeg(slot, 'pushed ' + gh.ago(repo.pushed_at), '');
+      }).catch(function () {
+        /* offline / rate-limited: clear the shimmer, keep the card clean */
+        slot.textContent = '';
+      });
+    }
+
+    var grid = doc.querySelector('#projects .cards') || slots[0];
+    onceVisible(grid, 0.15, function () {
+      slots.forEach(load);
+    });
+  }
+
+  /* ============================================================
+     Live terminal — tails public events, answers whois lookups
+     ============================================================ */
+  function initTerminal() {
+    var term = doc.getElementById('term');
+    var body = doc.getElementById('term-body');
+    var form = doc.getElementById('term-form');
+    var input = doc.getElementById('term-cmd');
+    if (!term || !body) return;
+
+    var queue = [];
+    var typing = false;
+    var cursor = doc.createElement('span');
+    cursor.className = 't-cursor';
+
+    function pad(s, n) {
+      s = String(s);
+      while (s.length < n) s += ' ';
+      return s + ' ';
+    }
+
+    function scrollDown() { body.scrollTop = body.scrollHeight; }
+
+    function println(segs, pause) {
+      queue.push({ segs: segs, pause: pause || 40 });
+      pump();
+    }
+
+    function pump() {
+      if (typing) return;
+      var item = queue.shift();
+      if (!item) return;
+      typing = true;
+      var row = doc.createElement('span');
+      row.className = 'row';
+      body.appendChild(row);
+
+      if (reduced) {
+        item.segs.forEach(function (sg) { mkSeg(row, sg.t, sg.c); });
+        row.appendChild(cursor);
+        scrollDown();
+        typing = false;
+        pump();
+        return;
+      }
+
+      row.appendChild(cursor);
+      var si = 0, ci = 0, cur = null, last = 0;
+      function frame(ts) {
+        if (!last) last = ts;
+        var n = Math.max(1, Math.round((ts - last) * 0.11)); /* ~110 chars/s */
+        last = ts;
+        while (n-- > 0 && si < item.segs.length) {
+          var sg = item.segs[si];
+          if (!cur) { cur = doc.createElement('span'); if (sg.c) cur.className = sg.c; row.insertBefore(cur, cursor); }
+          if (ci < sg.t.length) cur.textContent += sg.t.charAt(ci++);
+          if (ci >= sg.t.length) { si++; ci = 0; cur = null; }
+        }
+        scrollDown();
+        if (si < item.segs.length) { requestAnimationFrame(frame); return; }
+        setTimeout(function () { typing = false; pump(); }, item.pause);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function feedLine(type, repo, extra, when) {
+      var segs = [
+        { t: pad(type, 7), c: 't-type' },
+        { t: pad(repo, 24), c: 't-repo' }
+      ];
+      if (extra) segs.push({ t: extra + '  ', c: '' });
+      segs.push({ t: when, c: 't-time' });
+      return segs;
+    }
+
+    function fmtEvent(ev) {
+      var repo = gh.clean(ev.repo && ev.repo.name ? ev.repo.name : '?');
+      var when = gh.ago(ev.created_at);
+      var p = ev.payload || {};
+      var extra = '';
+      var type = String(ev.type || 'event').replace(/Event$/, '').toLowerCase();
+      if (ev.type === 'PushEvent') {
+        type = 'push';
+        var commits = p.commits || [];
+        if (commits.length) {
+          var msg = gh.clean(commits[commits.length - 1].message || '').split('\n')[0];
+          if (msg.length > 44) msg = msg.slice(0, 43) + '…';
+          extra = '"' + msg + '"';
+        } else if (p.ref) {
+          extra = gh.clean(String(p.ref).replace(/^refs\/heads\//, ''));
+        }
+      } else if (ev.type === 'WatchEvent') { type = 'star'; }
+      else if (ev.type === 'PullRequestEvent') { type = 'pr'; extra = gh.clean(p.action || ''); }
+      else if (ev.type === 'IssuesEvent') { type = 'issue'; extra = gh.clean(p.action || ''); }
+      else if (ev.type === 'CreateEvent') { extra = gh.clean(p.ref_type || ''); }
+      else if (ev.type === 'ReleaseEvent') { extra = gh.clean(p.release && p.release.tag_name || ''); }
+      return feedLine(type, repo, extra, when);
+    }
+
+    function hint() {
+      println([{ t: ' ', c: '' }]);
+      println([{ t: 'type ', c: 't-dim' }, { t: 'whois <username>', c: 't-cmd' },
+               { t: ' to look up any github account · try: ', c: 't-dim' },
+               { t: 'whois torvalds', c: 't-cmd' }]);
+    }
+
+    function snapshot(reason) {
+      println([{ t: reason + ' — replaying cached snapshot', c: 't-err' }], 200);
+      println(feedLine('push', 'zyads/zyads.github.io', '"Personal site"', 'cached'), 90);
+      println(feedLine('repo', 'zyads/heddle', 'version control for many hands', 'cached'), 90);
+      println(feedLine('repo', 'zyads/arbor', 'dendritic depth vs transformer depth', 'cached'), 90);
+      hint();
+    }
+
+    function bootFeed() {
+      println([{ t: '$ ', c: 't-dim' }, { t: 'tail -f github/events --user zyads', c: 't-cmd' }], 160);
+      println([{ t: 'connecting to api.github.com ...', c: 't-dim' }], 260);
+      if (!ghSupported) { snapshot('live calls unavailable in this browser'); return; }
+      gh.get('/users/zyads/events/public?per_page=15').then(function (events) {
+        if (!events || !events.length) { snapshot('no recent public activity'); return; }
+        println([{ t: 'connected — live public feed', c: 't-ok' }], 280);
+        events.slice(0, 8).forEach(function (ev) { println(fmtEvent(ev), 110); });
+        /* resolve the head commit of the newest push for a real message line */
+        var top = null;
+        for (var i = 0; i < events.length; i++) {
+          var ev = events[i], p = ev.payload || {};
+          if (ev.type === 'PushEvent' && p.head && ev.repo && ev.repo.name) { top = ev; break; }
+        }
+        if (!top) { hint(); return; }
+        var rn = top.repo.name, sha = top.payload.head;
+        gh.get('/repos/' + rn + '/commits/' + sha).then(function (c) {
+          var msg = gh.clean(c.commit && c.commit.message || '').split('\n')[0];
+          if (msg.length > 52) msg = msg.slice(0, 51) + '…';
+          println([{ t: 'HEAD    ', c: 't-ok' }, { t: gh.clean(rn) + '@' + String(sha).slice(0, 7) + '  ', c: 't-repo' },
+                   { t: '"' + msg + '"', c: '' }], 120);
+          hint();
+        }).catch(hint);
+      }).catch(function () {
+        snapshot('api unreachable or rate-limited');
+      });
+    }
+
+    function kv(key, val) {
+      println([{ t: pad(key, 16), c: 't-dim' }, { t: gh.clean(val), c: '' }], 60);
+    }
+
+    function whois(name) {
+      if (!ghSupported) {
+        println([{ t: 'live lookups unavailable in this browser', c: 't-err' }]);
+        return;
+      }
+      println([{ t: 'GET api.github.com/users/' + name + ' ...', c: 't-dim' }], 100);
+      gh.get('/users/' + encodeURIComponent(name)).then(function (u) {
+        kv('login', (u.login || name) + (u.name ? '  (' + u.name + ')' : ''));
+        kv('public repos', gh.fmt(u.public_repos));
+        kv('followers', gh.fmt(u.followers));
+        if (u.created_at) kv('on github since', String(u.created_at).slice(0, 4));
+        if (u.bio) {
+          var bio = gh.clean(u.bio).replace(/\s+/g, ' ');
+          kv('bio', bio.length > 58 ? bio.slice(0, 57) + '…' : bio);
+        }
+        return gh.get('/search/repositories?q=user:' + encodeURIComponent(name) +
+                      '&sort=stars&order=desc&per_page=1').then(function (res) {
+          var r = res && res.items && res.items[0];
+          if (r) {
+            kv('top repo', r.name + '  ★ ' + gh.fmt(r.stargazers_count) +
+                           (r.language ? '  · ' + r.language : ''));
+          }
+          println([{ t: ' ', c: '' }]);
+        }).catch(function () { println([{ t: ' ', c: '' }]); });
+      }).catch(function (err) {
+        if (err && err.status === 404) {
+          println([{ t: 'user not found: ' + name, c: 't-err' }]);
+        } else {
+          println([{ t: 'api unreachable or rate-limited — try again in a minute', c: 't-err' }]);
+        }
+      });
+    }
+
+    if (form && input) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var raw = gh.clean(input.value).replace(/\s+/g, ' ').trim().slice(0, 60);
+        input.value = '';
+        if (!raw) return;
+        println([{ t: 'visitor@web:~$ ', c: 't-dim' }, { t: raw, c: 't-cmd' }], 80);
+        var parts = raw.split(' ');
+        var cmd = parts[0].toLowerCase();
+        if (cmd === 'clear') { queue.length = 0; body.textContent = ''; return; }
+        if (cmd === 'help') {
+          println([{ t: 'commands: ', c: 't-dim' }, { t: 'whois <username>', c: 't-cmd' },
+                   { t: ' · ', c: 't-dim' }, { t: 'clear', c: 't-cmd' },
+                   { t: ' · ', c: 't-dim' }, { t: 'help', c: 't-cmd' }]);
+          return;
+        }
+        var name = (cmd === 'whois' || cmd === 'stats' || cmd === 'gh') ? parts[1] : parts[0];
+        if (!name || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(name)) {
+          println([{ t: 'usage: whois <github-username>', c: 't-err' }]);
+          return;
+        }
+        whois(name);
+      });
+      term.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('a, input')) return;
+        if (window.getSelection && String(window.getSelection())) return;
+        try { input.focus({ preventScroll: true }); } catch (err) { input.focus(); }
+      });
+    }
+
+    onceVisible(term, 0.25, bootFeed);
+  }
+
   /* ============================================================ */
   function boot() {
     initField();
@@ -1106,9 +1455,11 @@
     initMagnetic();
     initTilt();
     initCursor();
+    initLiveCards();
+    initTerminal();
     try {
       console.log('%czyad@shehadeh:~$ %cwhoami', 'color:#38e0ff;font-weight:bold', 'color:#e9edf5');
-      console.log('%cSoftware engineer — developer platforms, build systems, applied AI tooling.\nEverything on this page is hand-rolled vanilla JS. Zero external requests. View source, it is all here.', 'color:#9aa3b8');
+      console.log('%cSoftware engineer — developer platforms, build systems, applied AI tooling.\nEverything on this page is hand-rolled vanilla JS. The only requests leave for api.github.com, read-only. View source, it is all here.', 'color:#9aa3b8');
     } catch (e) { /* no console, no problem */ }
   }
 
