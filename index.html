@@ -1550,7 +1550,7 @@
      ============================================================ */
   var WALL_DIGEST = '4cf1faf31e82b7708af033f7ce301e8ac29c1e870370583711d084baeb156b48';
   var WALL_SALT = 'zw1';
-  var WALL_ENDPOINT = ''; /* write relay (Cloudflare Worker) — empty until deployed; page degrades gracefully */
+  var WALL_ENDPOINT = 'https://zyads-wall.zyshehadeh.workers.dev/'; /* write relay: origin-locked Worker holds the only credential */
   var WALL_RAW = 'https://raw.githubusercontent.com/zyads/wall/master/data.json';
   var wrongTries = 0;
   var SNARK = [
