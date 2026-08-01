@@ -282,6 +282,67 @@
   }
   .stat .lbl { margin-top: 0.2rem; font-size: 0.82rem; color: var(--faint); line-height: 1.4; }
 
+  /* ---------- writing ---------- */
+  .posts { display: flex; flex-direction: column; gap: 1rem; }
+  .post {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--card);
+    overflow: hidden;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+  .post[open], .post:hover { border-color: rgba(56,224,255,0.35); }
+  .post[open] { box-shadow: 0 18px 50px -22px rgba(56,224,255,0.2); }
+  .post summary {
+    list-style: none; cursor: pointer;
+    padding: 1.3rem 1.5rem;
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+  }
+  .post summary::-webkit-details-marker { display: none; }
+  .post summary::after {
+    content: "+"; margin-left: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--c1); font-size: 1.2rem; line-height: 1;
+    transition: transform 0.3s ease;
+  }
+  .post[open] summary::after { content: "\2212"; }
+  .post summary h3 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+  .post .when {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem; color: var(--faint); letter-spacing: 0.04em;
+  }
+  .post .teaser { flex-basis: 100%; color: var(--muted); font-size: 0.94rem; margin-top: 0.15rem; }
+  .post-body { padding: 0 1.5rem 1.6rem; border-top: 1px solid var(--line); }
+  .post-body > * { margin-top: 1.1rem; }
+  .post-body h4 {
+    font-size: 1.02rem; font-weight: 700; color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .post-body h5 {
+    font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--faint); font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .post-body p, .post-body li { color: var(--muted); }
+  .post-body ul { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .post-body code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em; color: var(--c1);
+    background: rgba(56,224,255,0.08);
+    border: 1px solid rgba(56,224,255,0.16);
+    padding: 0.1em 0.4em; border-radius: 6px;
+  }
+  .post-body pre {
+    background: #070b14; border: 1px solid var(--line); border-radius: 12px;
+    padding: 1rem 1.15rem; overflow-x: auto;
+  }
+  .post-body pre code {
+    background: none; border: 0; padding: 0; color: #cfe8f5;
+    font-size: 0.84rem; line-height: 1.65;
+  }
+  .post-body .kw { color: var(--c3); }
+  .post-body .cm { color: var(--faint); font-style: italic; }
+
   /* ---------- project cards ---------- */
   .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; perspective: 1200px; }
   @media (max-width: 900px) { .cards { grid-template-columns: 1fr; } }
@@ -545,6 +606,7 @@
       <li><a href="#projects">Projects</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#live">Live</a></li>
+      <li><a href="#writing">Writing</a></li>
       <li class="hide-s"><a class="ext" href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
     </ul>
   </nav>
@@ -673,9 +735,79 @@
     </div>
   </section>
 
+  <section id="writing" aria-labelledby="writing-h">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="idx">05</span><h2 id="writing-h">Writing</h2></div>
+
+      <!-- ADD A POST: copy this block, newest first. Nothing else to do — no build step.
+      <details class="post reveal">
+        <summary>
+          <h3>Your title here</h3>
+          <span class="when">Mon YYYY</span>
+          <p class="teaser">One line that makes someone want to open it.</p>
+        </summary>
+        <div class="post-body">
+          <p>Paragraphs go here.</p>
+          <pre><code>code blocks look like this</code></pre>
+        </div>
+      </details>
+      -->
+
+      <div class="posts">
+        <details class="post reveal">
+          <summary>
+            <h3>Storing Tree Relationships in a Table</h3>
+            <span class="when">Jan 2024</span>
+            <p class="teaser">Three ways to put a tree in a relational database, and what each one costs you.</p>
+          </summary>
+          <div class="post-body">
+            <p>Storing hierarchical data, such as tree structures, in a relational database can be achieved through various models. Each has its own characteristics, benefits and drawbacks. Here are three common approaches.</p>
+
+            <h4>Adjacency List Model</h4>
+            <p>The simplest way to represent tree-like data. Add a <code>parent_id</code> column to each row referencing the <code>id</code> of the parent node. Straightforward, but less efficient as the tree gets deeper.</p>
+            <pre><code><span class="kw">CREATE TABLE</span> tree (
+    node_id  INT PRIMARY KEY,
+    parent_id INT NULL REFERENCES tree (node_id)
+);</code></pre>
+            <h5>Pros</h5>
+            <ul><li>Simple implementation.</li><li>Suitable for shallow trees.</li></ul>
+            <h5>Cons</h5>
+            <ul><li>Query performance degrades with tree depth.</li><li>No built-in support for traversing beyond immediate children.</li></ul>
+
+            <h4>Path Enumeration</h4>
+            <p>Instead of storing only the parent ID, store the entire path from the root to the current node. Great for pulling all ancestors of a node at once; painful on updates, since moving a node means rewriting every path that contains it.</p>
+            <pre><code><span class="kw">CREATE TABLE</span> tree (
+    node_id INT PRIMARY KEY,
+    path    VARCHAR(255)  <span class="cm">-- "1.2.3" = node 3 under node 2 under node 1</span>
+);</code></pre>
+            <h5>Pros</h5>
+            <ul><li>Efficient for ancestor and subtree queries.</li></ul>
+            <h5>Cons</h5>
+            <ul><li>Updates are complex and potentially costly.</li></ul>
+
+            <h4>Nested Set Model</h4>
+            <p>Represent the tree as nested sets: each node gets a left and right value marking its position. Supports efficient range queries, but insertions and deletions require carefully renumbering those values.</p>
+            <pre><code><span class="kw">CREATE TABLE</span> tree (
+    node_id     INT PRIMARY KEY,
+    left_value  INT,
+    right_value INT
+);</code></pre>
+            <h5>Pros</h5>
+            <ul><li>Efficient range queries and subtree reads.</li></ul>
+            <h5>Cons</h5>
+            <ul><li>Left/right values must be recalculated on every structural change.</li></ul>
+
+            <h4>Conclusion</h4>
+            <p>The right model depends on the depth of your tree, the queries you run most, and how much update complexity you can stomach. Each one trades simplicity, query efficiency and maintenance overhead against the others.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <section id="education" aria-labelledby="education-h" style="padding-top:0">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">05</span><h2 id="education-h">Education</h2></div>
+      <div class="sec-head reveal"><span class="idx">06</span><h2 id="education-h">Education</h2></div>
       <div class="edu reveal">
         <div>
           <h3>University of Michigan</h3>
