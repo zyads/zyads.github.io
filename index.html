@@ -384,6 +384,80 @@
   @keyframes scroll-l { to { transform: translateX(calc(-100% - 2.5rem)); } }
   @keyframes scroll-r { from { transform: translateX(calc(-100% - 2.5rem)); } to { transform: none; } }
 
+  /* ---------- build log (blog) ---------- */
+  .log-note {
+    margin: calc(-1 * clamp(1rem, 3vw, 2rem)) 0 2.2rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem; color: var(--faint);
+    max-width: 52rem; line-height: 1.7;
+  }
+  .log-note .prompt { color: var(--c1); }
+  .log-note a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+  .log-note a:hover { color: var(--c1); }
+  .post {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--card);
+    padding: 1.6rem 1.7rem 1.5rem;
+    overflow: hidden;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+  .post:hover { border-color: rgba(74,222,128,0.35); box-shadow: 0 18px 50px -20px rgba(74,222,128,0.18); }
+  .post + .post { margin-top: 1.2rem; }
+  .post .meta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem;
+    font-size: 0.78rem; color: var(--faint);
+  }
+  .post .meta .ok { color: #4ade80; text-shadow: 0 0 10px rgba(74,222,128,0.7); font-size: 0.6rem; }
+  .post .meta a { color: var(--faint); text-decoration: underline; text-underline-offset: 3px; }
+  .post .meta a:hover { color: var(--c1); }
+  .post h3 { margin-top: 0.5rem; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+  .post .body p { margin-top: 0.65rem; color: var(--muted); font-size: 0.96rem; max-width: 50rem; }
+  .post .body ul { margin: 0.65rem 0 0 1.2rem; color: var(--muted); font-size: 0.96rem; }
+  .post .body li::marker { color: var(--c2); }
+  .post .body pre {
+    margin-top: 0.8rem; padding: 0.9rem 1.1rem;
+    background: #070b14; border: 1px solid var(--line); border-radius: 12px;
+    overflow-x: auto; font-size: 0.82rem; line-height: 1.55; color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .post .body code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85em; color: var(--c1);
+    background: rgba(56,224,255,0.07);
+    border: 1px solid rgba(56,224,255,0.15);
+    border-radius: 5px; padding: 0.08em 0.35em;
+  }
+  .post .body pre code { color: inherit; background: none; border: 0; padding: 0; }
+  .pipe {
+    margin-top: 1.2rem;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+    font-size: 0.72rem;
+  }
+  .pipe .sep { color: var(--faint); }
+  .pipe .st {
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 0.18rem 0.65rem;
+    color: var(--faint);
+    transition: color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    transition-delay: var(--pd, 0s);
+  }
+  .pipe .st::before {
+    content: "\2713 ";
+    color: #4ade80;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    transition-delay: calc(var(--pd, 0s) + 0.2s);
+  }
+  .reveal.in .pipe .st, html:not(.js) .pipe .st {
+    color: #a7f3d0;
+    border-color: rgba(74,222,128,0.45);
+    box-shadow: 0 0 14px rgba(74,222,128,0.12);
+  }
+  .reveal.in .pipe .st::before, html:not(.js) .pipe .st::before { opacity: 1; }
+
   /* ---------- education ---------- */
   .edu {
     border: 1px solid var(--line); border-radius: 20px;
@@ -449,6 +523,7 @@
       <li><a href="#about">About</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#experience">Experience</a></li>
+      <li><a href="#log">Log</a></li>
       <li class="hide-s"><a class="ext" href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
     </ul>
   </nav>
@@ -556,9 +631,27 @@
     </div>
   </section>
 
+  <section id="log" aria-labelledby="log-h">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="idx">04</span><h2 id="log-h">Build Log</h2></div>
+      <p class="log-note reveal"><span class="prompt">$</span> gh issue create --title "post: ..." <span class="prompt">&rarr;</span> a GitHub Action renders the issue into this page, commits it, redeploys the site, and closes the issue with the live link. Every entry below is a merged pipeline run with a paper trail. <a href="https://github.com/zyads/zyads.github.io/blob/master/.github/workflows/publish-post.yml">Read the pipeline</a>.</p>
+      <!-- POSTS:START -->
+      <article class="post reveal">
+        <div class="meta mono"><span class="ok">&#9679;</span> run #001 &middot; 2026-08-01 &middot; genesis commit</div>
+        <h3>This page publishes itself</h3>
+        <div class="body">
+          <p>Every post in this log starts life as a GitHub Issue on this repo. When I open one titled <code>post: ...</code> (or label one <code>post</code>), a GitHub Action wakes up: it renders the issue body into the HTML you are reading right now, commits the change back to master as a bot, redeploys the site through GitHub Pages, then comments the live URL on the issue and closes it.</p>
+          <p>No CMS, no database, no build framework &mdash; the pipeline is one workflow file and one stdlib-only Python script. The blog is a build artifact, every entry links back to the issue it was born as, and the whole edit history is public. This entry is the only one that was committed by hand; it had to exist before the machine could write the rest.</p>
+        </div>
+        <div class="pipe mono" aria-hidden="true"><span class="st" style="--pd:0s">issue</span><span class="sep">&rarr;</span><span class="st" style="--pd:0.3s">action</span><span class="sep">&rarr;</span><span class="st" style="--pd:0.6s">render</span><span class="sep">&rarr;</span><span class="st" style="--pd:0.9s">commit</span><span class="sep">&rarr;</span><span class="st" style="--pd:1.2s">deploy</span></div>
+      </article>
+      <!-- POSTS:END -->
+    </div>
+  </section>
+
   <section id="education" aria-labelledby="education-h" style="padding-top:0">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">04</span><h2 id="education-h">Education</h2></div>
+      <div class="sec-head reveal"><span class="idx">05</span><h2 id="education-h">Education</h2></div>
       <div class="edu reveal">
         <div>
           <h3>University of Michigan</h3>
@@ -854,7 +947,7 @@
         }
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
-    ['about', 'projects', 'experience'].forEach(function (id) {
+    ['about', 'projects', 'experience', 'log'].forEach(function (id) {
       var el = doc.getElementById(id);
       if (el) secIo.observe(el);
     });
