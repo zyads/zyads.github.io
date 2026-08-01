@@ -2600,7 +2600,7 @@
         var p = ok[i];
         var name = gh.clean(String(p.name || 'anonymous')).replace(/\s+/g, ' ').trim().slice(0, 24) || 'anonymous';
         var msg = gh.clean(String(p.message)).replace(/\s+/g, ' ').trim().slice(0, 140);
-        var when = p.ts || p.t || p.time || p.date || '';
+        var when = p.ts || p.at || p.t || p.time || p.date || '';
         var h = doc.createElement('span');
         h.className = 'row';
         mkSeg(h, name, 'wp-name');
