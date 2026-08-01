@@ -540,6 +540,61 @@
   .term-input input::placeholder { color: var(--faint); opacity: 0.65; }
   @media (max-width: 560px) { .term-input input::placeholder { color: transparent; } }
 
+  /* ---------- terminal shell extras + wall ---------- */
+  .term { position: relative; }
+  .matrix-cv {
+    position: absolute; left: 0; right: 0; z-index: 3;
+    pointer-events: none; opacity: 1; transition: opacity 0.45s ease;
+  }
+  .t-grant { color: #4ade80; text-shadow: 0 0 16px rgba(74,222,128,0.55); font-weight: 600; }
+  .bar-btn {
+    margin-left: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem; letter-spacing: 0.04em;
+    color: var(--faint); background: none; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 0.15rem 0.65rem;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  .bar-btn:hover { color: var(--c1); border-color: rgba(56,224,255,0.45); }
+  .wall-compose {
+    border-top: 1px solid var(--line);
+    padding: 0.95rem 1.2rem 1.1rem;
+    display: flex; flex-direction: column; gap: 0.65rem;
+    font-size: 0.8rem;
+  }
+  .wall-compose form { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+  .wall-compose label { color: var(--faint); white-space: nowrap; }
+  .wall-compose input, .wall-compose textarea {
+    background: rgba(148,163,184,0.06);
+    border: 1px solid var(--line); border-radius: 8px;
+    color: var(--text); font: inherit;
+    padding: 0.45rem 0.7rem;
+    caret-color: var(--c1);
+  }
+  .wall-compose input:focus, .wall-compose textarea:focus {
+    outline: none; border-color: rgba(56,224,255,0.5);
+    box-shadow: 0 0 16px rgba(56,224,255,0.12);
+  }
+  .wall-compose input::placeholder, .wall-compose textarea::placeholder { color: var(--faint); opacity: 0.65; }
+  #wall-name { width: 11rem; }
+  #wall-answer { flex: 1; min-width: 10rem; }
+  #wall-msg { flex: 1 1 100%; min-width: 12rem; resize: none; line-height: 1.5; }
+  .wall-btn {
+    font: inherit; cursor: pointer;
+    color: var(--c1);
+    background: rgba(56,224,255,0.08);
+    border: 1px solid rgba(56,224,255,0.35); border-radius: 8px;
+    padding: 0.45rem 1.1rem;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+  }
+  .wall-btn:hover { background: rgba(56,224,255,0.16); box-shadow: 0 0 18px rgba(56,224,255,0.22); }
+  .wall-meta { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; width: 100%; }
+  .wall-count { color: var(--faint); font-size: 0.72rem; margin-left: auto; font-variant-numeric: tabular-nums; }
+  .wall-status { font-size: 0.78rem; min-height: 1.2em; margin: 0; }
+  .wp-name { color: var(--c1); font-weight: 600; }
+  .wp-msg { color: var(--text); }
+
   /* ---------- education ---------- */
   .edu {
     border: 1px solid var(--line); border-radius: 20px;
@@ -606,7 +661,8 @@
       <li><a href="#projects">Projects</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#live">Live</a></li>
-      <li><a href="#writing">Writing</a></li>
+      <li><a href="#wall">Wall</a></li>
+      <li class="hide-s"><a href="#writing">Writing</a></li>
       <li class="hide-s"><a class="ext" href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
     </ul>
   </nav>
@@ -719,7 +775,7 @@
   <section id="live" aria-labelledby="live-h">
     <div class="wrap">
       <div class="sec-head reveal"><span class="idx">04</span><h2 id="live-h">Live from GitHub</h2></div>
-      <p class="term-note reveal"><span class="prompt">$</span> This terminal is real. When it scrolls into view, your browser calls the GitHub API directly &mdash; unauthenticated, read-only &mdash; and tails my public activity. The prompt at the bottom works too: <span class="prompt">whois &lt;username&gt;</span> looks up any GitHub account, live.</p>
+      <p class="term-note reveal"><span class="prompt">$</span> This terminal is real. When it scrolls into view, your browser calls the GitHub API directly &mdash; unauthenticated, read-only &mdash; and tails my public activity. The prompt at the bottom is a working shell: <span class="prompt">help</span> lists 30-odd commands &mdash; live GitHub lookups, a small filesystem, toys, a theme switcher&hellip; and a few things <span class="prompt">help</span> won't admit to.</p>
       <div class="term reveal" id="term">
         <div class="term-bar" aria-hidden="true">
           <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
@@ -728,16 +784,49 @@
         <div class="term-body mono" id="term-body" role="log" aria-label="Live GitHub activity feed"></div>
         <form class="term-input mono" id="term-form">
           <label for="term-cmd"><span class="p1">visitor</span>@web:~$</label>
-          <input id="term-cmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="60"
-                 placeholder="whois &lt;github-username&gt; &middot; try: whois torvalds" aria-label="Terminal command. Type whois followed by a GitHub username and press Enter.">
+          <input id="term-cmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="120"
+                 placeholder="type help &middot; try: whois torvalds &middot; matrix &middot; neofetch" aria-label="Terminal command input. Type help and press Enter to list commands.">
         </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="wall" aria-labelledby="wall-h">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="idx">05</span><h2 id="wall-h">The Wall</h2></div>
+      <p class="term-note reveal"><span class="prompt">$</span> A public guestbook with a lock. Reading is free: the feed below comes straight from <span class="prompt">github.com/zyads/wall</span>. Writing costs a puzzle &mdash; the answer is hidden in this page, and solving it happens right here. Deliberately token-free: no credential ships with this page. Posts travel through a tiny relay that can only ring a bell at that one repo, where a robot moderates them onto the wall. You never leave this page to post.</p>
+      <div class="term reveal" id="wallbox">
+        <div class="term-bar">
+          <span class="dot r" aria-hidden="true"></span><span class="dot y" aria-hidden="true"></span><span class="dot g" aria-hidden="true"></span>
+          <span class="term-title mono">guest@wall:~ &mdash; cat wall/data.json</span>
+          <button class="bar-btn" id="wall-refresh" type="button" hidden>refresh</button>
+        </div>
+        <div class="term-body mono" id="wall-posts" role="log" aria-label="Wall posts">
+          <span class="row t-dim">The wall is read live from github.com/zyads/wall &mdash; enable JavaScript to see it here.</span>
+        </div>
+        <div class="wall-compose mono" id="wall-compose" hidden>
+          <form id="wall-lockform">
+            <label for="wall-answer">speak, friend:</label>
+            <input id="wall-answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" placeholder="one word unlocks the wall">
+            <button class="wall-btn" type="submit">unlock</button>
+          </form>
+          <form id="wall-form" hidden>
+            <input id="wall-name" type="text" autocomplete="off" maxlength="24" placeholder="name (optional)">
+            <textarea id="wall-msg" rows="2" maxlength="140" placeholder="leave something on the wall &mdash; 140 chars" aria-label="Wall message"></textarea>
+            <div class="wall-meta">
+              <button class="wall-btn" type="submit">post to the wall</button>
+              <span class="wall-count" id="wall-count">0/140</span>
+            </div>
+          </form>
+          <p class="wall-status t-dim" id="wall-status"></p>
+        </div>
       </div>
     </div>
   </section>
 
   <section id="writing" aria-labelledby="writing-h">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">05</span><h2 id="writing-h">Writing</h2></div>
+      <div class="sec-head reveal"><span class="idx">06</span><h2 id="writing-h">Writing</h2></div>
 
       <!-- ADD A POST: copy this block, newest first. Nothing else to do — no build step.
       <details class="post reveal">
@@ -807,7 +896,7 @@
 
   <section id="education" aria-labelledby="education-h" style="padding-top:0">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">06</span><h2 id="education-h">Education</h2></div>
+      <div class="sec-head reveal"><span class="idx">07</span><h2 id="education-h">Education</h2></div>
       <div class="edu reveal">
         <div>
           <h3>University of Michigan</h3>
@@ -827,7 +916,7 @@
       <a href="https://github.com/zyads" rel="me">GitHub</a>
       <a href="https://linkedin.com/in/zyads" rel="me">LinkedIn</a>
     </nav>
-    <span>Hand-built &mdash; vanilla JS, no trackers. The only thing this page talks to is api.github.com, read-only.</span>
+    <span>Hand-built &mdash; vanilla JS, no trackers. This page talks to api.github.com and the wall repo, read-only &mdash; writing to the wall takes a puzzle.</span>
   </div>
 </footer>
 
@@ -841,6 +930,7 @@
   var doc = document;
   var root = doc.documentElement;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fieldAPI = null; /* set by initField — lets the terminal poke the hero canvas */
 
   /* ============================================================
      Particle constellation field (canvas, hand-rolled)
@@ -860,6 +950,10 @@
     var heroVisible = true;
     var LINK = 110, LINK2 = LINK * LINK;
     var MR = 150, MR2 = MR * MR;
+    var countOverride = 0;          /* terminal `particles <n>` */
+    var flareUntil = 0;             /* unlock celebration */
+    var constPairs = null;          /* puzzle: particles pinned to a star map */
+    var constStart = 0, constUntil = 0;
 
     function makeParticle() {
       return {
@@ -879,7 +973,7 @@
       canvas.width = Math.max(1, Math.round(W * dpr));
       canvas.height = Math.max(1, Math.round(H * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var target = Math.min(150, Math.max(45, Math.round((W * H) / 14000)));
+      var target = countOverride || Math.min(150, Math.max(45, Math.round((W * H) / 14000)));
       while (parts.length < target) parts.push(makeParticle());
       parts.length = target;
       paintBase(1);
@@ -894,6 +988,8 @@
     function step() {
       t += 0.005;
       var i, j, p, q, dx, dy, d2, d, a, sp, alpha;
+      var nowMs = Date.now();
+      var cap = nowMs < flareUntil ? 4.2 : 1.9;
 
       for (i = 0; i < parts.length; i++) {
         p = parts[i];
@@ -914,11 +1010,24 @@
 
         p.vx *= 0.955; p.vy *= 0.955;
         sp = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        if (sp > 1.9) { p.vx *= 1.9 / sp; p.vy *= 1.9 / sp; }
+        if (sp > cap) { p.vx *= cap / sp; p.vy *= cap / sp; }
         p.x += p.vx; p.y += p.vy;
 
         if (p.x < -20) p.x = W + 20; else if (p.x > W + 20) p.x = -20;
         if (p.y < -20) p.y = H + 20; else if (p.y > H + 20) p.y = -20;
+      }
+
+      /* puzzle: pinned particles glide onto the star map */
+      if (constPairs) {
+        if (nowMs > constUntil) { constPairs = null; }
+        else {
+          for (i = 0; i < constPairs.length; i++) {
+            var cp = constPairs[i];
+            cp.p.x += (cp.tx - cp.p.x) * 0.08;
+            cp.p.y += (cp.ty - cp.p.y) * 0.08;
+            cp.p.vx *= 0.7; cp.p.vy *= 0.7;
+          }
+        }
       }
 
       /* fade previous frame -> motion trails */
@@ -964,6 +1073,26 @@
         ctx.fill();
       }
 
+      /* puzzle: trace the asterism while the pins hold */
+      if (constPairs) {
+        var fade = Math.min(1, (constUntil - nowMs) / 700, (nowMs - constStart) / 700);
+        if (fade > 0) {
+          ctx.strokeStyle = 'rgba(56, 224, 255, ' + (0.6 * fade).toFixed(3) + ')';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(constPairs[0].p.x, constPairs[0].p.y);
+          for (i = 1; i < constPairs.length; i++) ctx.lineTo(constPairs[i].p.x, constPairs[i].p.y);
+          ctx.lineTo(constPairs[3].p.x, constPairs[3].p.y); /* close the bowl */
+          ctx.stroke();
+          for (i = 0; i < constPairs.length; i++) {
+            ctx.fillStyle = 'rgba(233, 237, 245, ' + (0.9 * fade).toFixed(3) + ')';
+            ctx.beginPath();
+            ctx.arc(constPairs[i].p.x, constPairs[i].p.y, 2.6, 0, 6.2832);
+            ctx.fill();
+          }
+        }
+      }
+
       /* soft aura under the cursor */
       if (mouse.x > -999) {
         var g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
@@ -1006,6 +1135,56 @@
     }
 
     resize();
+
+    fieldAPI = {
+      reduced: reduced,
+      count: function () { return parts.length; },
+      setCount: function (n) {
+        if (reduced) return 0;
+        countOverride = Math.max(12, Math.min(400, Math.round(n) || 0));
+        resize();
+        schedule();
+        return countOverride;
+      },
+      flare: function () {
+        if (reduced) return false;
+        for (var i = 0; i < parts.length; i++) {
+          var p = parts[i];
+          var dx = p.x - W / 2, dy = p.y - H / 2;
+          var d = Math.sqrt(dx * dx + dy * dy) || 1;
+          p.vx += (dx / d) * 2.8;
+          p.vy += (dy / d) * 2.8;
+        }
+        flareUntil = Date.now() + 1900;
+        schedule();
+        return true;
+      },
+      constellation: function () {
+        if (reduced || parts.length < 7) return false;
+        /* Ursa Major, the Big Dipper — handle then bowl, normalized */
+        var sky = [[0.02, 0.10], [0.14, 0.22], [0.26, 0.28], [0.38, 0.30],
+                   [0.56, 0.22], [0.58, 0.42], [0.40, 0.46]];
+        var used = {};
+        constPairs = [];
+        for (var s = 0; s < sky.length; s++) {
+          var tx = W * (0.22 + sky[s][0] * 0.56);
+          var ty = H * (0.14 + sky[s][1] * 0.62);
+          var best = -1, bd = Infinity;
+          for (var i = 0; i < parts.length; i++) {
+            if (used[i]) continue;
+            var dx = parts[i].x - tx, dy = parts[i].y - ty;
+            var d2 = dx * dx + dy * dy;
+            if (d2 < bd) { bd = d2; best = i; }
+          }
+          used[best] = true;
+          constPairs.push({ p: parts[best], tx: tx, ty: ty });
+        }
+        constStart = Date.now();
+        constUntil = constStart + 5200;
+        schedule();
+        return true;
+      }
+    };
 
     if (reduced) {
       /* single static constellation, no animation */
@@ -1103,7 +1282,7 @@
         }
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
-    ['about', 'projects', 'experience', 'live'].forEach(function (id) {
+    ['about', 'projects', 'experience', 'live', 'wall', 'writing'].forEach(function (id) {
       var el = doc.getElementById(id);
       if (el) secIo.observe(el);
     });
@@ -1259,7 +1438,7 @@
      ============================================================ */
   var ghSupported = !!(window.fetch && window.Promise && window.sessionStorage);
   var gh = {
-    budget: 12, /* hard cap on live API calls per page view */
+    budget: 20, /* hard cap on live API calls per page view */
     clean: function (v) {
       return String(v == null ? '' : v)
         .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+/g, '[redacted]');
@@ -1366,7 +1545,51 @@
   }
 
   /* ============================================================
-     Live terminal — tails public events, answers whois lookups
+     The wall's lock. The answer is NOT in this file — only a
+     salted SHA-256 digest of it. Solve the page, not the source.
+     ============================================================ */
+  var WALL_DIGEST = '4cf1faf31e82b7708af033f7ce301e8ac29c1e870370583711d084baeb156b48';
+  var WALL_SALT = 'zw1';
+  var WALL_ENDPOINT = ''; /* write relay (Cloudflare Worker) — empty until deployed; page degrades gracefully */
+  var WALL_RAW = 'https://raw.githubusercontent.com/zyads/wall/master/data.json';
+  var wrongTries = 0;
+  var SNARK = [
+    'no. the sky does not answer to that.',
+    'still no. the terminal command `hint` is free, you know.',
+    'wrong again. points of light, imagined lines, pictures with names.',
+    'one word. thirteen letters. older than astronomy.',
+    'admirable persistence, terrible aim. go `trace` it in the terminal.'
+  ];
+  function snark() {
+    var s = SNARK[Math.min(wrongTries, SNARK.length - 1)];
+    wrongTries++;
+    return s;
+  }
+  function isUnlocked() {
+    try { return sessionStorage.getItem('wallKey') === 'granted'; } catch (e) { return false; }
+  }
+  /* -> Promise<true|false|null>; null = WebCrypto unavailable */
+  function checkAnswer(raw) {
+    var norm = String(raw || '').toLowerCase().trim().replace(/\s+/g, ' ');
+    if (!norm || !(window.crypto && window.crypto.subtle && window.TextEncoder)) {
+      return Promise.resolve(norm ? null : false);
+    }
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(norm + WALL_SALT)).then(function (buf) {
+      var b = new Uint8Array(buf), h = '', i;
+      for (i = 0; i < b.length; i++) h += (b[i] < 16 ? '0' : '') + b[i].toString(16);
+      return h === WALL_DIGEST;
+    }).catch(function () { return null; });
+  }
+  var wallAPI = { setUnlocked: function () {}, refresh: function () {} };
+  function grantAccess() {
+    try { sessionStorage.setItem('wallKey', 'granted'); } catch (e) { /* fine */ }
+    if (fieldAPI) fieldAPI.flare();
+    wallAPI.setUnlocked(true);
+  }
+
+  /* ============================================================
+     Live terminal — a real mini-shell over a fictional filesystem,
+     live GitHub lookups, toys, and the puzzle's hidden doors.
      ============================================================ */
   function initTerminal() {
     var term = doc.getElementById('term');
@@ -1385,12 +1608,26 @@
       while (s.length < n) s += ' ';
       return s + ' ';
     }
+    function rep(ch, n) {
+      var s = '';
+      while (n-- > 0) s += ch;
+      return s;
+    }
 
     function scrollDown() { body.scrollTop = body.scrollHeight; }
+    function trim() {
+      while (body.childNodes.length > 350) body.removeChild(body.firstChild);
+    }
 
-    function println(segs, pause) {
-      queue.push({ segs: segs, pause: pause || 40 });
+    function println(segs, pause, fast) {
+      queue.push({ segs: segs, pause: pause == null ? 40 : pause, fast: !!fast });
       pump();
+    }
+    function out(t, c, pause, fast) {
+      println([{ t: t, c: c || '' }], pause, fast);
+    }
+    function outArt(lines, cls) {
+      for (var i = 0; i < lines.length; i++) out(lines[i] || ' ', cls, 0, true);
     }
 
     function pump() {
@@ -1401,6 +1638,7 @@
       var row = doc.createElement('span');
       row.className = 'row';
       body.appendChild(row);
+      trim();
 
       if (reduced) {
         item.segs.forEach(function (sg) { mkSeg(row, sg.t, sg.c); });
@@ -1413,9 +1651,10 @@
 
       row.appendChild(cursor);
       var si = 0, ci = 0, cur = null, last = 0;
+      var rate = item.fast ? 1.4 : 0.11; /* chars per ms */
       function frame(ts) {
         if (!last) last = ts;
-        var n = Math.max(1, Math.round((ts - last) * 0.11)); /* ~110 chars/s */
+        var n = Math.max(1, Math.round((ts - last) * rate));
         last = ts;
         while (n-- > 0 && si < item.segs.length) {
           var sg = item.segs[si];
@@ -1464,11 +1703,13 @@
       return feedLine(type, repo, extra, when);
     }
 
-    function hint() {
+    function feedHint() {
       println([{ t: ' ', c: '' }]);
-      println([{ t: 'type ', c: 't-dim' }, { t: 'whois <username>', c: 't-cmd' },
-               { t: ' to look up any github account · try: ', c: 't-dim' },
-               { t: 'whois torvalds', c: 't-cmd' }]);
+      println([{ t: 'type ', c: 't-dim' }, { t: 'help', c: 't-cmd' },
+               { t: ' — this prompt is a real shell · try: ', c: 't-dim' },
+               { t: 'whois torvalds', c: 't-cmd' }, { t: ' · ', c: 't-dim' },
+               { t: 'neofetch', c: 't-cmd' }, { t: ' · ', c: 't-dim' },
+               { t: 'matrix', c: 't-cmd' }]);
     }
 
     function snapshot(reason) {
@@ -1476,7 +1717,7 @@
       println(feedLine('push', 'zyads/zyads.github.io', '"Personal site"', 'cached'), 90);
       println(feedLine('repo', 'zyads/heddle', 'version control for many hands', 'cached'), 90);
       println(feedLine('repo', 'zyads/arbor', 'dendritic depth vs transformer depth', 'cached'), 90);
-      hint();
+      feedHint();
     }
 
     function bootFeed() {
@@ -1493,15 +1734,15 @@
           var ev = events[i], p = ev.payload || {};
           if (ev.type === 'PushEvent' && p.head && ev.repo && ev.repo.name) { top = ev; break; }
         }
-        if (!top) { hint(); return; }
+        if (!top) { feedHint(); return; }
         var rn = top.repo.name, sha = top.payload.head;
         gh.get('/repos/' + rn + '/commits/' + sha).then(function (c) {
           var msg = gh.clean(c.commit && c.commit.message || '').split('\n')[0];
           if (msg.length > 52) msg = msg.slice(0, 51) + '…';
           println([{ t: 'HEAD    ', c: 't-ok' }, { t: gh.clean(rn) + '@' + String(sha).slice(0, 7) + '  ', c: 't-repo' },
                    { t: '"' + msg + '"', c: '' }], 120);
-          hint();
-        }).catch(hint);
+          feedHint();
+        }).catch(feedHint);
       }).catch(function () {
         snapshot('api unreachable or rate-limited');
       });
@@ -1544,37 +1785,934 @@
       });
     }
 
+    /* ---------- virtual filesystem (fiction, but true) ---------- */
+    var FS = {
+      'about.txt': [
+        'Zyad Shehadeh — software engineer',
+        'Wilton, CT',
+        ' ',
+        'Platform engineer at ASML: Bazel build infrastructure,',
+        'CI/CD with artifact provenance, and an internal agent',
+        'platform of 15 MCP servers serving 1,000+ engineers.',
+        ' ',
+        'Off the clock: local-first tools. Software that runs on',
+        'your machine, answers to you, and keeps your data yours.'
+      ],
+      'contact.card': [
+        'name     Zyad Shehadeh',
+        'github   github.com/zyads',
+        'linkedin linkedin.com/in/zyads',
+        'web      zyads.github.io',
+        'note     DMs open on LinkedIn. no address on file — the robots scrape.'
+      ],
+      'experience.log': [
+        '[2024-now] ASML — Software Engineer III (Wilton, CT)',
+        '           platform for 1,000+ engineers: bazel, CI/CD, 15 MCP servers',
+        '[2023-24]  ASML — intern -> contract (San Diego, CA)',
+        '           on-prem -> Azure streaming migration, millions of events/day',
+        '[2022]     LatchBio — SWE intern (San Francisco, CA)',
+        '           docker bioinformatics workflows, 100+ research runs/mo',
+        '[2020-22]  UM Medical School — research intern (Ann Arbor, MI)',
+        '           R Shiny + ML (SVM, RF, GBM) for metabolomics'
+      ],
+      '.night_sky': [
+        'you found a dotfile. good instincts.',
+        ' ',
+        'the header of this page draws points of light and joins',
+        'them with imagined lines. people have drawn the sky that',
+        'way forever — and they gave those pictures a name.',
+        ' ',
+        'one word. that name. then:  unlock <word>'
+      ],
+      'projects': {
+        'aether.md': [
+          '# Aether (private, in dev)',
+          'A local-first, agent-native OS layer: freeze and resume',
+          'desktop sessions, grounded local-model answers, every',
+          'effect behind capability tokens and human approval.',
+          'Nothing leaves the machine.'
+        ],
+        'heddle.md': [
+          '# Heddle — github.com/zyads/heddle',
+          'Version control for many hands moving at once: intent',
+          'leases, stitches, and a green-by-construction fabric',
+          'above git, for humans and agents committing in parallel.'
+        ],
+        'arbor.md': [
+          '# Arbor — github.com/zyads/arbor',
+          'Research code testing whether dendritic depth can',
+          'substitute for transformer depth — shallow networks of',
+          'deep neurons, benchmarked against conventional nets.'
+        ]
+      },
+      'writing': {
+        'tree-relationships.md': [
+          '# Storing Tree Relationships in a Table (Jan 2024)',
+          ' ',
+          'Three ways to put a tree in a relational database:',
+          ' ',
+          '1. adjacency list — a parent_id column. simple; degrades',
+          '   as the tree gets deeper.',
+          '2. path enumeration — store the whole path ("1.2.3").',
+          '   fast ancestor reads; moving a node rewrites every',
+          '   path that contains it.',
+          '3. nested sets — left/right values per node. efficient',
+          '   range queries; every structural change renumbers.',
+          ' ',
+          'verdict: choose by depth, dominant queries, and how much',
+          'update complexity you can stomach. full post: §06 Writing.'
+        ]
+      }
+    };
+    var cwd = [];
+
+    function isDir(n) { return !!n && typeof n === 'object' && !(n instanceof Array); }
+    function nodeAt(segs) {
+      var n = FS, i;
+      for (i = 0; i < segs.length; i++) {
+        if (isDir(n) && Object.prototype.hasOwnProperty.call(n, segs[i])) n = n[segs[i]];
+        else return undefined;
+      }
+      return n;
+    }
+    function resolvePath(str) {
+      str = String(str == null ? '' : str);
+      var segs = (/^[~\/]/.test(str)) ? [] : cwd.slice();
+      var parts = str.replace(/^[~\/]+/, '').split('/');
+      for (var i = 0; i < parts.length; i++) {
+        var s = parts[i];
+        if (s === '' || s === '.') continue;
+        if (s === '..') { segs.pop(); continue; }
+        segs.push(s);
+      }
+      return { segs: segs, node: nodeAt(segs) };
+    }
+    function pathStr(segs) { return '~' + (segs.length ? '/' + segs.join('/') : ''); }
+
+    /* ---------- ascii assets ---------- */
+    var COW = [
+      '        \\   ^__^',
+      '         \\  (oo)\\_______',
+      '            (__)\\       )\\/\\',
+      '                ||----w |',
+      '                ||     ||'
+    ];
+    var TRAIN = [
+      '        o  o  O  O',
+      '      _____       ____       ____',
+      '  ___|[Z][Z]|_ __| [] | _ __| [] |',
+      ' |____________|==|____|==|__|____|',
+      '    (O)---(O)    (O)(O)     (O)(O)'
+    ];
+    var LOGO = [
+      ' ███████╗',
+      ' ╚══███╔╝',
+      '   ███╔╝ ',
+      '  ███╔╝  ',
+      ' ███████╗',
+      ' ╚══════╝'
+    ];
+    /* 3x5 bitmap font: 15 bits per glyph, rows top->bottom */
+    var F5 = {
+      A: '010101111101101', B: '110101110101110', C: '011100100100011', D: '110101101101110',
+      E: '111100111100111', F: '111100111100100', G: '011100101101011', H: '101101111101101',
+      I: '111010010010111', J: '011001001101010', K: '101101110101101', L: '100100100100111',
+      M: '101111111101101', N: '111101101101101', O: '010101101101010', P: '110101110100100',
+      Q: '010101101011001', R: '110101110101101', S: '011100010001110', T: '111010010010010',
+      U: '101101101101111', V: '101101101101010', W: '101101111111101', X: '101101010101101',
+      Y: '101101010010010', Z: '111001010100111',
+      '0': '111101101101111', '1': '010110010010111', '2': '110001010100111', '3': '110001010001110',
+      '4': '101101111001001', '5': '111100110001110', '6': '011100110101010', '7': '111001010010010',
+      '8': '010101010101010', '9': '010101011001110',
+      ' ': '000000000000000', '-': '000000111000000', '!': '010010010000010', '?': '110001010000010',
+      '.': '000000000000010'
+    };
+    var FORTUNES = [
+      'There are two hard things in computer science: cache invalidation, naming things, and off-by-one errors.',
+      '"It works on my machine." — every engineer, moments before learning about containers',
+      'Weeks of coding can save you hours of planning.',
+      '"The best code is no code at all." — Jeff Atwood',
+      '"Simplicity is prerequisite for reliability." — Edsger Dijkstra',
+      '"Programs must be written for people to read, and only incidentally for machines to execute." — Abelson & Sussman',
+      '"First, solve the problem. Then, write the code." — John Johnson',
+      'Deleted code is debugged code.',
+      '"A distributed system is one in which the failure of a computer you did not even know existed can render your own computer unusable." — Leslie Lamport',
+      'Hofstadter\'s Law: it always takes longer than you expect, even when you take into account Hofstadter\'s Law.',
+      '"Premature optimization is the root of all evil." — Donald Knuth',
+      '"The cheapest, fastest, and most reliable components are those that aren\'t there." — Gordon Bell'
+    ];
+    var THEMES = {
+      cyan: ['#38e0ff', '#8b8cf8', '#f472d0'],
+      magenta: ['#f472d0', '#8b8cf8', '#38e0ff'],
+      indigo: ['#8b8cf8', '#38e0ff', '#f472d0']
+    };
+    var USER_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
+    var REPO_RE = /^[A-Za-z0-9][\w.-]{0,38}\/[\w.-]{1,100}$/;
+
+    /* ---------- command registry ---------- */
+    var CMDS = [];
+    var CMDMAP = {};
+    function reg(group, name, usage, desc, fn, hidden) {
+      var c = { group: group, name: name, usage: usage, desc: desc, fn: fn, hidden: !!hidden };
+      CMDS.push(c);
+      CMDMAP[name] = c;
+    }
+    function visibleNames() {
+      var v = [], i;
+      for (i = 0; i < CMDS.length; i++) if (!CMDS[i].hidden) v.push(CMDS[i].name);
+      return v;
+    }
+    function lev(a, b) {
+      var m = a.length, n = b.length, i, j, prev, tmp;
+      if (!m) return n; if (!n) return m;
+      var row = [];
+      for (j = 0; j <= n; j++) row[j] = j;
+      for (i = 1; i <= m; i++) {
+        prev = row[0]; row[0] = i;
+        for (j = 1; j <= n; j++) {
+          tmp = row[j];
+          row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+          prev = tmp;
+        }
+      }
+      return row[n];
+    }
+    function apiFail(err) {
+      if (err && err.status === 404) out('not found.', 't-err');
+      else out('api unreachable or rate-limited — try again in a minute.', 't-err');
+    }
+
+    /* ---------- live github commands ---------- */
+    reg('github', 'whois', 'whois <username>', 'look up any github account, live', function (args) {
+      var name = args[0];
+      if (!name || !USER_RE.test(name)) { out('usage: whois <github-username>', 't-err'); return; }
+      whois(name);
+    });
+    reg('github', 'repos', 'repos [user]', 'top repositories by stars (default: zyads)', function (args) {
+      var u = args[0] || 'zyads';
+      if (!USER_RE.test(u)) { out('usage: repos [github-username]', 't-err'); return; }
+      if (!ghSupported) { out('live lookups unavailable in this browser', 't-err'); return; }
+      out('GET api.github.com/search/repositories?q=user:' + u + ' ...', 't-dim', 80);
+      gh.get('/search/repositories?q=user:' + encodeURIComponent(u) + '&sort=stars&order=desc&per_page=5').then(function (res) {
+        var items = (res && res.items) || [];
+        if (!items.length) { out('no public repos found for ' + u, 't-err'); return; }
+        for (var i = 0; i < items.length; i++) {
+          var r = items[i];
+          var d = gh.clean(r.description || '').replace(/\s+/g, ' ');
+          if (d.length > 44) d = d.slice(0, 43) + '…';
+          println([{ t: pad(gh.clean(r.name).slice(0, 22), 22), c: 't-repo' },
+                   { t: pad('★ ' + gh.fmt(r.stargazers_count), 9), c: '' },
+                   { t: pad(gh.clean(r.language || '—'), 11), c: 't-dim' },
+                   { t: d, c: 't-dim' }], 60);
+        }
+      }).catch(apiFail);
+    });
+    reg('github', 'stars', 'stars <user>', 'count the stars on someone\'s top repos', function (args) {
+      var u = args[0];
+      if (!u || !USER_RE.test(u)) { out('usage: stars <github-username>', 't-err'); return; }
+      if (!ghSupported) { out('live lookups unavailable in this browser', 't-err'); return; }
+      out('counting stars for ' + u + ' ...', 't-dim', 80);
+      gh.get('/search/repositories?q=user:' + encodeURIComponent(u) + '&sort=stars&order=desc&per_page=20').then(function (res) {
+        var items = (res && res.items) || [];
+        if (!items.length) { out('no public repos found for ' + u, 't-err'); return; }
+        var total = 0, i;
+        for (i = 0; i < items.length; i++) total += items[i].stargazers_count || 0;
+        println([{ t: gh.clean(u), c: 't-repo' },
+                 { t: ' holds ', c: '' }, { t: '★ ' + gh.fmt(total), c: 't-ok' },
+                 { t: ' across their top ' + items.length + ' repos', c: '' }], 80);
+        for (i = 0; i < Math.min(3, items.length); i++) {
+          println([{ t: '  ' + pad(gh.clean(items[i].name).slice(0, 24), 24), c: 't-repo' },
+                   { t: '★ ' + gh.fmt(items[i].stargazers_count), c: 't-dim' }], 50);
+        }
+      }).catch(apiFail);
+    });
+    reg('github', 'commits', 'commits [owner/repo]', 'recent commits (default: this site)', function (args) {
+      var r = args[0] || 'zyads/zyads.github.io';
+      if (!REPO_RE.test(r)) { out('usage: commits [owner/repo]', 't-err'); return; }
+      if (!ghSupported) { out('live lookups unavailable in this browser', 't-err'); return; }
+      out('GET api.github.com/repos/' + r + '/commits ...', 't-dim', 80);
+      gh.get('/repos/' + r + '/commits?per_page=5').then(function (list) {
+        if (!list || !list.length) { out('no commits found', 't-err'); return; }
+        for (var i = 0; i < list.length; i++) {
+          var c = list[i];
+          var msg = gh.clean(c.commit && c.commit.message || '').split('\n')[0];
+          if (msg.length > 48) msg = msg.slice(0, 47) + '…';
+          var when = c.commit && c.commit.author && c.commit.author.date ? gh.ago(c.commit.author.date) : '';
+          println([{ t: String(c.sha || '').slice(0, 7) + '  ', c: 't-repo' },
+                   { t: pad(msg, 50), c: '' },
+                   { t: when, c: 't-time' }], 60);
+        }
+      }).catch(apiFail);
+    });
+    reg('github', 'trending', 'trending [language]', 'hottest repos born in the last two weeks', function (args) {
+      if (!ghSupported) { out('live lookups unavailable in this browser', 't-err'); return; }
+      var lang = (args[0] || '').replace(/[^\w+#-]/g, '').slice(0, 20);
+      var since = new Date(Date.now() - 12096e5).toISOString().slice(0, 10);
+      var q = 'created:>' + since + (lang ? ' language:' + lang : ' stars:>50');
+      out('searching github for young repos' + (lang ? ' in ' + lang : '') + ' ...', 't-dim', 80);
+      gh.get('/search/repositories?q=' + encodeURIComponent(q) + '&sort=stars&order=desc&per_page=5').then(function (res) {
+        var items = (res && res.items) || [];
+        if (!items.length) { out('nothing trending — quiet fortnight' + (lang ? ' for ' + lang : ''), 't-err'); return; }
+        for (var i = 0; i < items.length; i++) {
+          var r = items[i];
+          var d = gh.clean(r.description || '').replace(/\s+/g, ' ');
+          if (d.length > 40) d = d.slice(0, 39) + '…';
+          println([{ t: pad(gh.clean(r.full_name).slice(0, 30), 30), c: 't-repo' },
+                   { t: pad('★ ' + gh.fmt(r.stargazers_count), 9), c: '' },
+                   { t: d, c: 't-dim' }], 60);
+        }
+      }).catch(apiFail);
+    });
+
+    /* ---------- filesystem commands ---------- */
+    reg('files', 'ls', 'ls [-a] [path]', 'list files (dotfiles hide from the lazy)', function (args) {
+      var all = false, target = '';
+      for (var i = 0; i < args.length; i++) {
+        if (args[i] === '-a' || args[i] === '-la' || args[i] === '-al') all = true;
+        else target = args[i];
+      }
+      var r = resolvePath(target || '.');
+      if (r.node === undefined) { out('ls: no such file or directory: ' + target, 't-err'); return; }
+      if (!isDir(r.node)) { out(target, ''); return; }
+      var names = [], k;
+      for (k in r.node) if (Object.prototype.hasOwnProperty.call(r.node, k)) {
+        if (!all && k.charAt(0) === '.') continue;
+        names.push(k);
+      }
+      names.sort();
+      if (!names.length) { out('(empty)', 't-dim'); return; }
+      var segs = [];
+      for (i = 0; i < names.length; i++) {
+        var dir = isDir(r.node[names[i]]);
+        segs.push({ t: names[i] + (dir ? '/' : '') + '   ', c: dir ? 't-repo' : (names[i].charAt(0) === '.' ? 't-dim' : '') });
+      }
+      println(segs, 30);
+    });
+    reg('files', 'cd', 'cd [dir]', 'change directory', function (args) {
+      if (!args[0] || args[0] === '~' || args[0] === '/') { cwd = []; return; }
+      var r = resolvePath(args[0]);
+      if (r.node === undefined) { out('cd: no such directory: ' + args[0], 't-err'); return; }
+      if (!isDir(r.node)) { out('cd: not a directory: ' + args[0], 't-err'); return; }
+      cwd = r.segs;
+    });
+    reg('files', 'pwd', 'pwd', 'where am I?', function () { out(pathStr(cwd), ''); });
+    reg('files', 'cat', 'cat <file>', 'read a file', function (args) {
+      if (!args[0]) { out('usage: cat <file>', 't-err'); return; }
+      var r = resolvePath(args[0]);
+      if (r.node === undefined) { out('cat: no such file: ' + args[0], 't-err'); return; }
+      if (isDir(r.node)) { out('cat: is a directory: ' + args[0], 't-err'); return; }
+      outArt(r.node, '');
+      if (r.segs[r.segs.length - 1] === '.night_sky' && fieldAPI && fieldAPI.constellation()) {
+        out(' ', '', 0);
+        out('(look up — the header is drawing it for you right now)', 't-ok');
+      }
+    });
+    reg('files', 'tree', 'tree', 'the whole filesystem at a glance', function () {
+      out('~', 't-repo', 0, true);
+      function walk(node, prefix) {
+        var names = [], k, i;
+        for (k in node) if (Object.prototype.hasOwnProperty.call(node, k) && k.charAt(0) !== '.') names.push(k);
+        names.sort();
+        for (i = 0; i < names.length; i++) {
+          var last = i === names.length - 1;
+          var n = node[names[i]];
+          println([{ t: prefix + (last ? '└── ' : '├── '), c: 't-dim' },
+                   { t: names[i] + (isDir(n) ? '/' : ''), c: isDir(n) ? 't-repo' : '' }], 0, true);
+          if (isDir(n)) walk(n, prefix + (last ? '    ' : '│   '));
+        }
+      }
+      walk(FS, '');
+    });
+
+    /* ---------- toys ---------- */
+    reg('toys', 'matrix', 'matrix', 'there is no spoon (4 seconds of it)', function () {
+      if (reduced) { out('matrix: your OS asked for reduced motion, and I respect it. imagine cascading green glyphs.', 't-dim'); return; }
+      if (doc.querySelector('.matrix-cv')) return;
+      var cv = doc.createElement('canvas');
+      cv.className = 'matrix-cv';
+      cv.style.top = body.offsetTop + 'px';
+      cv.style.height = body.clientHeight + 'px';
+      term.appendChild(cv);
+      var mctx = cv.getContext('2d');
+      if (!mctx) { term.removeChild(cv); return; }
+      cv.width = cv.clientWidth; cv.height = cv.clientHeight;
+      var fs = 14, cols = Math.max(1, Math.ceil(cv.width / fs));
+      var drops = [], i;
+      for (i = 0; i < cols; i++) drops[i] = Math.random() * -20;
+      var glyphs = 'アィウエカキサシタナニハヒマヤラワ0123456789ZYAD<>*+=';
+      var start = Date.now(), stopped = false;
+      function stop() {
+        if (stopped) return;
+        stopped = true;
+        doc.removeEventListener('keydown', stop);
+        cv.style.opacity = '0';
+        setTimeout(function () { if (cv.parentNode) cv.parentNode.removeChild(cv); }, 500);
+      }
+      function frame() {
+        if (stopped) return;
+        mctx.fillStyle = 'rgba(7, 11, 20, 0.14)';
+        mctx.fillRect(0, 0, cv.width, cv.height);
+        mctx.font = fs + 'px monospace';
+        for (var c = 0; c < cols; c++) {
+          var ch = glyphs.charAt((Math.random() * glyphs.length) | 0);
+          mctx.fillStyle = Math.random() < 0.08 ? '#d1ffe0' : '#34d399';
+          mctx.fillText(ch, c * fs, drops[c] * fs);
+          drops[c] += 0.55 + Math.random() * 0.45;
+          if (drops[c] * fs > cv.height && Math.random() > 0.973) drops[c] = 0;
+        }
+        if (Date.now() - start > 4000) { stop(); return; }
+        requestAnimationFrame(frame);
+      }
+      mctx.fillStyle = 'rgba(7, 11, 20, 0.9)';
+      mctx.fillRect(0, 0, cv.width, cv.height);
+      out('wake up, neo ... (any key stops the rain)', 't-ok', 0);
+      doc.addEventListener('keydown', stop);
+      requestAnimationFrame(frame);
+    });
+    reg('toys', 'fortune', 'fortune', 'a pull from the dev quote jar', function () {
+      out(FORTUNES[(Math.random() * FORTUNES.length) | 0], '', 60);
+    });
+    reg('toys', 'cowsay', 'cowsay <text>', 'the cow says what you say', function (args) {
+      var text = args.join(' ') || 'moo';
+      var words = text.split(' '), lines = [], line = '';
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        while (w.length > 36) { lines.push(w.slice(0, 36)); w = w.slice(36); }
+        if (!line.length) line = w;
+        else if (line.length + 1 + w.length <= 36) line += ' ' + w;
+        else { lines.push(line); line = w; }
+      }
+      if (line) lines.push(line);
+      var wmax = 0;
+      for (i = 0; i < lines.length; i++) wmax = Math.max(wmax, lines[i].length);
+      var art = [' ' + rep('_', wmax + 2)];
+      if (lines.length === 1) art.push('< ' + lines[0] + ' >');
+      else for (i = 0; i < lines.length; i++) {
+        var l = i === 0 ? '/' : (i === lines.length - 1 ? '\\' : '|');
+        var rch = i === 0 ? '\\' : (i === lines.length - 1 ? '/' : '|');
+        art.push(l + ' ' + pad(lines[i], wmax).slice(0, wmax + 1) + rch);
+      }
+      art.push(' ' + rep('-', wmax + 2));
+      outArt(art.concat(COW), '');
+    });
+    reg('toys', 'figlet', 'figlet <word>', 'big letters, small font (8 chars max)', function (args) {
+      var word = (args.join(' ') || 'zyad').toUpperCase().slice(0, 8);
+      for (var r = 0; r < 5; r++) {
+        var line = '';
+        for (var i = 0; i < word.length; i++) {
+          var bits = F5[word.charAt(i)] || F5[' '];
+          for (var c = 0; c < 3; c++) line += bits.charAt(r * 3 + c) === '1' ? '██' : '  ';
+          line += '  ';
+        }
+        out(line || ' ', 't-cmd', 0, true);
+      }
+    });
+    reg('toys', 'roll', 'roll [NdM]', 'roll the dice (default 2d6)', function (args) {
+      var m = /^(\d{1,2})d(\d{1,4})$/.exec((args[0] || '2d6').toLowerCase());
+      if (!m) { out('usage: roll NdM — like roll 2d6 or roll 1d20', 't-err'); return; }
+      var n = +m[1], s = +m[2];
+      if (n < 1 || n > 20 || s < 2) { out('roll: up to 20 dice, at least 2 sides. physics.', 't-err'); return; }
+      var rolls = [], total = 0;
+      for (var i = 0; i < n; i++) { var v = 1 + ((Math.random() * s) | 0); rolls.push(v); total += v; }
+      println([{ t: n + 'd' + s + ': ', c: 't-dim' },
+               { t: '[' + rolls.join(', ') + ']', c: 't-cmd' },
+               { t: ' = ', c: 't-dim' }, { t: String(total), c: 't-ok' }], 60);
+    });
+    reg('toys', 'weather', 'weather', 'the forecast, as far as this page knows', function () {
+      out('wilton, ct — simulated (this page calls no weather API):', 't-dim', 40);
+      out('  now       72°F · clear · 0% chance of meetings', '', 30);
+      out('  tonight   100% chance of stars in the header', '', 30);
+      out('  tomorrow  cyan with a chance of magenta', '', 30);
+    });
+    reg('toys', 'theme', 'theme <cyan|magenta|indigo|reset>', 'reskin the whole site, live', function (args) {
+      var name = (args[0] || '').toLowerCase();
+      if (name === 'reset') name = 'cyan';
+      var t = THEMES[name];
+      if (!t) { out('themes: cyan (default) · magenta · indigo', 't-err'); return; }
+      root.style.setProperty('--c1', t[0]);
+      root.style.setProperty('--c2', t[1]);
+      root.style.setProperty('--c3', t[2]);
+      out('theme set to ' + name + ' — every accent on this page just changed. (the star field keeps its own colors.)', 't-ok', 60);
+    });
+    reg('toys', 'particles', 'particles <n>', 'retune the hero star field (12-400)', function (args) {
+      var n = parseInt(args[0], 10);
+      if (!isFinite(n)) { out('usage: particles <n> — try particles 400', 't-err'); return; }
+      if (!fieldAPI) { out('the field is not running in this browser.', 't-err'); return; }
+      if (fieldAPI.reduced) { out('your OS asked for reduced motion — the field is a still photograph today.', 't-dim'); return; }
+      var applied = fieldAPI.setCount(n);
+      out('field retuned: ' + applied + ' particles now drifting over the hero. scroll up.', 't-ok', 60);
+    });
+
+    /* ---------- system ---------- */
+    reg('system', 'help', 'help [command]', 'this list', function (args) {
+      if (args[0]) {
+        var c = CMDMAP[args[0].toLowerCase()];
+        if (!c) { out('help: no such command: ' + args[0], 't-err'); return; }
+        out('usage: ' + c.usage, 't-cmd', 20, true);
+        out('  ' + c.desc, 't-dim', 20, true);
+        return;
+      }
+      var groups = { github: 'live github (real API, read-only)', files: 'filesystem', toys: 'toys', system: 'system' };
+      var lastGroup = '';
+      for (var i = 0; i < CMDS.length; i++) {
+        var cm = CMDS[i];
+        if (cm.hidden) continue;
+        if (cm.group !== lastGroup) {
+          lastGroup = cm.group;
+          out(' ', '', 0, true);
+          out('── ' + groups[cm.group] + ' ──', 't-dim', 0, true);
+        }
+        println([{ t: '  ' + pad(cm.name, 11), c: 't-cmd' }, { t: cm.desc, c: 't-dim' }], 0, true);
+      }
+      out(' ', '', 0, true);
+      out('tab completes · arrows recall history · and one or two commands this list will not admit to.', 't-dim', 0, true);
+    });
+    reg('system', 'hint', 'hint', 'a nudge, if you are the curious type', function () {
+      var hints = [
+        ['this shell answers to more than `help` admits.', 'the curious leave a trace.'],
+        ['look up: the top of this page draws the night sky,', 'joining scattered points with imagined lines.', 'such drawings have an old, old name.'],
+        ['there is a dotfile in ~ that plain `ls` will not show you.', '`ls -a` has no such manners.'],
+        ['when you know the word:  unlock <word>']
+      ];
+      var h = hints[Math.min(hintIdx++, hints.length - 1)];
+      for (var i = 0; i < h.length; i++) out(h[i], i === 0 ? 't-cmd' : 't-dim', 30);
+    });
+    reg('system', 'wall', 'wall', 'about the guestbook below', function () {
+      out('the wall lives just below this terminal — §05.', '', 40);
+      if (isUnlocked()) out('you already hold the key. go write something.', 't-ok');
+      else out('reading is free; posting is locked behind a riddle. `hint` starts the trail.', 't-dim');
+    });
+    reg('system', 'neofetch', 'neofetch', 'this machine, aesthetically', function () {
+      var ua = navigator.userAgent || '';
+      var browser = 'a browser';
+      var mm;
+      if ((mm = /Edg\/(\d+)/.exec(ua))) browser = 'Edge ' + mm[1];
+      else if ((mm = /OPR\/(\d+)/.exec(ua))) browser = 'Opera ' + mm[1];
+      else if ((mm = /Firefox\/(\d+)/.exec(ua))) browser = 'Firefox ' + mm[1];
+      else if ((mm = /Chrome\/(\d+)/.exec(ua))) browser = 'Chrome ' + mm[1];
+      else if ((mm = /Version\/(\d+).*Safari/.exec(ua))) browser = 'Safari ' + mm[1];
+      var os = /Windows/.test(ua) ? 'Windows' : /Mac OS X/.test(ua) ? 'macOS' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Linux/.test(ua) ? 'Linux' : 'an OS';
+      var gpu = '';
+      try {
+        var gc = doc.createElement('canvas');
+        var gl = gc.getContext('webgl') || gc.getContext('experimental-webgl');
+        if (gl) {
+          var ext = gl.getExtension('WEBGL_debug_renderer_info');
+          gpu = String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+        }
+      } catch (e) { /* fine */ }
+      if (gpu.length > 42) gpu = gpu.slice(0, 41) + '…';
+      var info = [
+        ['visitor', '@zyads.github.io'],
+        ['────────', ''],
+        ['os', os],
+        ['browser', browser],
+        ['shell', 'zsh (zyad shell) 5.1-web'],
+        ['display', (screen.width || '?') + 'x' + (screen.height || '?') + ' @ ' + (window.devicePixelRatio || 1) + 'x'],
+        ['cores', String(navigator.hardwareConcurrency || 'undisclosed')],
+        ['memory', navigator.deviceMemory ? navigator.deviceMemory + ' GB (as admitted)' : 'undisclosed'],
+        ['gpu', gpu || 'undisclosed'],
+        ['lang', navigator.language || '?'],
+        ['uptime', Math.round((window.performance && performance.now ? performance.now() : 0) / 1000) + 's on this page'],
+        ['theme', 'dark. obviously.']
+      ];
+      var rows = Math.max(LOGO.length, info.length);
+      for (var i = 0; i < rows; i++) {
+        var kvp = info[i];
+        var segs = [{ t: pad(LOGO[i] || '', 11), c: 't-cmd' }];
+        if (kvp) {
+          if (kvp[1]) { segs.push({ t: pad(kvp[0], 9), c: 't-dim' }); segs.push({ t: kvp[1], c: '' }); }
+          else segs.push({ t: kvp[0], c: kvp[0] === '────────' ? 't-dim' : 't-ok' });
+        }
+        println(segs, 0, true);
+      }
+    });
+    reg('system', 'whoami', 'whoami', 'who you are, to this page', function () {
+      out('visitor — a guest with above-average curiosity.', '');
+    });
+    reg('system', 'uname', 'uname [-a]', 'system identification', function () {
+      out('ZyadOS 5.1.0-web #1 SMP PREEMPT zyads.github.io wasm64 GNU/js', '');
+    });
+    reg('system', 'date', 'date', 'your clock, echoed back', function () {
+      out(String(new Date()), '');
+    });
+    reg('system', 'echo', 'echo <text>', 'say it back', function (args, raw) {
+      out(raw.length > 5 ? raw.slice(5) : ' ', '');
+    });
+    reg('system', 'history', 'history', 'what you have typed here', function () {
+      if (!hist.length) { out('history: empty. you are new here.', 't-dim'); return; }
+      for (var i = 0; i < hist.length; i++) {
+        println([{ t: '  ' + pad(String(i + 1), 4), c: 't-dim' }, { t: hist[i], c: '' }], 0, true);
+      }
+    });
+    reg('system', 'clear', 'clear', 'wipe the screen', function () {
+      queue.length = 0;
+      body.textContent = '';
+    });
+    reg('system', 'exit', 'exit', 'leave (you cannot, really)', function () {
+      out('this tab is yours, not mine — I cannot close it. the door is ctrl+w. the site hopes you stay.', 't-dim');
+    });
+
+    /* ---------- hidden doors ---------- */
+    reg('hidden', 'sl', 'sl', 'you meant ls', function () {
+      if (reduced) {
+        outArt(TRAIN, 't-cmd');
+        out('you meant `ls`. the train forgives.', 't-dim');
+        return;
+      }
+      if (slRunning) return;
+      slRunning = true;
+      typing = true; /* hold the queue while the train passes */
+      var rows = [], i;
+      for (i = 0; i < TRAIN.length; i++) {
+        var r = doc.createElement('span');
+        r.className = 'row t-cmd';
+        r.textContent = ' ';
+        body.appendChild(r);
+        rows.push(r);
+      }
+      trim();
+      scrollDown();
+      var maxLen = 0;
+      for (i = 0; i < TRAIN.length; i++) maxLen = Math.max(maxLen, TRAIN[i].length);
+      var off = 44;
+      var iv = setInterval(function () {
+        off -= 2;
+        for (var i = 0; i < rows.length; i++) {
+          var line = TRAIN[i];
+          rows[i].textContent = (off >= 0 ? rep(' ', off) + line : line.slice(Math.min(-off, line.length))) || ' ';
+        }
+        scrollDown();
+        if (off < -maxLen) {
+          clearInterval(iv);
+          for (var j = 0; j < rows.length; j++) if (rows[j].parentNode) body.removeChild(rows[j]);
+          slRunning = false;
+          typing = false;
+          out('you meant `ls`. the train forgives.', 't-dim');
+        }
+      }, 55);
+    }, true);
+    reg('hidden', 'sudo', 'sudo <anything>', 'no', function (args, raw) {
+      if (/^sudo make me a sandwich$/i.test(raw)) { out('okay.', 't-ok'); return; }
+      if (/^sudo /.test(raw) && args.length) {
+        out('visitor is not in the sudoers file. this incident will be reported to no one, because there is no server.', 't-err');
+        return;
+      }
+      out('usage: sudo <command you will not be allowed to run>', 't-dim');
+    }, true);
+    reg('hidden', 'rm', 'rm', 'no', function (args, raw) {
+      if (/-r?f|-fr?/.test(raw) && /[\/~]/.test(raw)) {
+        out('rm: descending into /home/zyad ...', 't-err', 300);
+        out('rm: removing everything ...', 't-err', 500);
+        out('...just kidding. this filesystem is a work of fiction, and you have no write permits here.', 't-ok');
+        return;
+      }
+      out('rm: read-only filesystem. it is my website, after all.', 't-err');
+    }, true);
+    reg('hidden', 'trace', 'trace', 'follow the signal', function () {
+      out('tracing signal path ...', 't-dim', 240);
+      var drawn = fieldAPI && fieldAPI.constellation();
+      if (drawn) {
+        out('signal found: 7 points, 6 edges — being drawn into the header field right now.', 't-ok', 200);
+        out('look up. the field remembers what it draws.', '', 200);
+      } else {
+        out('signal found: 7 points, 6 edges — the Big Dipper, the kind of picture people have always drawn between stars.', 't-ok', 200);
+      }
+      out(' ', '', 60);
+      out('"scattered lights, joined by imagined lines,', 't-cmd', 60);
+      out(' named by the ancients — one word for such a picture."', 't-cmd', 60);
+      out(' ', '', 60);
+      out('speak it here:  unlock <word>', 't-dim');
+    }, true);
+    reg('hidden', 'unlock', 'unlock <word>', 'open the wall', function (args) {
+      var guess = args.join(' ');
+      if (!guess) { out('usage: unlock <word>', 't-err'); return; }
+      if (isUnlocked()) { out('already unlocked — the wall in §05 awaits.', 't-ok'); return; }
+      checkAnswer(guess).then(function (ok) {
+        if (ok === null) { out('cannot verify here — this browser lacks WebCrypto.', 't-err'); return; }
+        if (!ok) { out(snark(), 't-err'); return; }
+        out(' ', '', 40);
+        out('┌────────────────────────────────────┐', 't-grant', 60, true);
+        out('│   ACCESS GRANTED — WALL UNLOCKED   │', 't-grant', 60, true);
+        out('└────────────────────────────────────┘', 't-grant', 60, true);
+        out('the composer in §05 The Wall is open. be kind — a robot moderates.', 't-ok', 60);
+        grantAccess();
+      });
+    }, true);
+
+    var hist = [], histIdx = 0, hintIdx = 0, slRunning = false;
+
+    /* ---------- dispatcher + input UX ---------- */
+    function dispatch(raw) {
+      var parts = raw.split(' ');
+      var cmd = parts[0].toLowerCase();
+      var args = parts.slice(1);
+      var c = CMDMAP[cmd];
+      if (c) { c.fn(args, raw); return; }
+      var names = visibleNames(), best = null, bd = 3, i, d;
+      for (i = 0; i < names.length; i++) {
+        d = lev(cmd, names[i]);
+        if (d < bd) { bd = d; best = names[i]; }
+      }
+      if (best) { out('command not found: ' + cmd + ' — did you mean `' + best + '`?', 't-err'); return; }
+      if (USER_RE.test(cmd) && !args.length) {
+        out('command not found: ' + cmd + ' — if that is a github user, try `whois ' + cmd + '`', 't-err');
+        return;
+      }
+      out('command not found: ' + cmd + ' — `help` lists what this shell can do', 't-err');
+    }
+
+    function commonPrefix(list) {
+      if (!list.length) return '';
+      var p = list[0];
+      for (var i = 1; i < list.length; i++) {
+        while (list[i].slice(0, p.length) !== p) p = p.slice(0, -1);
+      }
+      return p;
+    }
+    function complete() {
+      var v = input.value.replace(/^\s+/, '');
+      var sp = v.indexOf(' ');
+      var cands = [], i;
+      if (sp === -1) {
+        if (!v) return;
+        var names = visibleNames();
+        for (i = 0; i < names.length; i++) if (names[i].slice(0, v.length) === v.toLowerCase()) cands.push(names[i]);
+        if (!cands.length) return;
+        if (cands.length === 1) { input.value = cands[0] + ' '; return; }
+        input.value = commonPrefix(cands);
+        println([{ t: cands.join('   '), c: 't-dim' }], 0, true);
+        return;
+      }
+      var cmd = v.slice(0, sp).toLowerCase();
+      if (cmd !== 'cat' && cmd !== 'cd' && cmd !== 'ls' && cmd !== 'tree') return;
+      var tok = v.slice(v.lastIndexOf(' ') + 1);
+      var slash = tok.lastIndexOf('/');
+      var dirPart = slash === -1 ? '' : tok.slice(0, slash + 1);
+      var frag = slash === -1 ? tok : tok.slice(slash + 1);
+      var r = resolvePath(dirPart || '.');
+      if (!isDir(r.node)) return;
+      for (var k in r.node) if (Object.prototype.hasOwnProperty.call(r.node, k)) {
+        if (k.charAt(0) === '.' && frag.charAt(0) !== '.') continue;
+        if (k.slice(0, frag.length) === frag) cands.push(k + (isDir(r.node[k]) ? '/' : ''));
+      }
+      if (!cands.length) return;
+      var base = v.slice(0, v.lastIndexOf(' ') + 1) + dirPart;
+      if (cands.length === 1) { input.value = base + cands[0] + (cands[0].slice(-1) === '/' ? '' : ' '); return; }
+      input.value = base + commonPrefix(cands);
+      println([{ t: cands.join('   '), c: 't-dim' }], 0, true);
+    }
+
     if (form && input) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
-        var raw = gh.clean(input.value).replace(/\s+/g, ' ').trim().slice(0, 60);
+        var raw = gh.clean(input.value).replace(/\s+/g, ' ').trim().slice(0, 120);
         input.value = '';
         if (!raw) return;
-        println([{ t: 'visitor@web:~$ ', c: 't-dim' }, { t: raw, c: 't-cmd' }], 80);
-        var parts = raw.split(' ');
-        var cmd = parts[0].toLowerCase();
-        if (cmd === 'clear') { queue.length = 0; body.textContent = ''; return; }
-        if (cmd === 'help') {
-          println([{ t: 'commands: ', c: 't-dim' }, { t: 'whois <username>', c: 't-cmd' },
-                   { t: ' · ', c: 't-dim' }, { t: 'clear', c: 't-cmd' },
-                   { t: ' · ', c: 't-dim' }, { t: 'help', c: 't-cmd' }]);
-          return;
+        if (hist[hist.length - 1] !== raw) hist.push(raw);
+        if (hist.length > 100) hist.shift();
+        histIdx = hist.length;
+        println([{ t: 'visitor@web:~$ ', c: 't-dim' }, { t: raw, c: 't-cmd' }], 60);
+        dispatch(raw);
+      });
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowUp') {
+          if (hist.length) {
+            histIdx = Math.max(0, histIdx - 1);
+            input.value = hist[histIdx] || '';
+            e.preventDefault();
+          }
+        } else if (e.key === 'ArrowDown') {
+          if (histIdx < hist.length) {
+            histIdx++;
+            input.value = hist[histIdx] || '';
+            e.preventDefault();
+          }
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          complete();
         }
-        var name = (cmd === 'whois' || cmd === 'stats' || cmd === 'gh') ? parts[1] : parts[0];
-        if (!name || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(name)) {
-          println([{ t: 'usage: whois <github-username>', c: 't-err' }]);
-          return;
-        }
-        whois(name);
       });
       term.addEventListener('click', function (e) {
-        if (e.target.closest && e.target.closest('a, input')) return;
+        if (e.target.closest && e.target.closest('a, input, button')) return;
         if (window.getSelection && String(window.getSelection())) return;
         try { input.focus({ preventScroll: true }); } catch (err) { input.focus(); }
       });
     }
 
     onceVisible(term, 0.25, bootFeed);
+  }
+
+  /* ============================================================
+     The Wall — public read from the wall repo; writes go through
+     a tiny origin-locked relay and a moderating GitHub Action.
+     No token in this page, ever.
+     ============================================================ */
+  function initWall() {
+    var box = doc.getElementById('wallbox');
+    var postsEl = doc.getElementById('wall-posts');
+    var refreshBtn = doc.getElementById('wall-refresh');
+    var compose = doc.getElementById('wall-compose');
+    var lockForm = doc.getElementById('wall-lockform');
+    var ansIn = doc.getElementById('wall-answer');
+    var postForm = doc.getElementById('wall-form');
+    var nameIn = doc.getElementById('wall-name');
+    var msgIn = doc.getElementById('wall-msg');
+    var countEl = doc.getElementById('wall-count');
+    var statusEl = doc.getElementById('wall-status');
+    if (!box || !postsEl) return;
+
+    var budget = 6;
+    var lastPost = 0;
+
+    function status(t, cls) {
+      if (!statusEl) return;
+      statusEl.textContent = t;
+      statusEl.className = 'wall-status ' + (cls || 't-dim');
+    }
+    function setRows(rows) {
+      postsEl.textContent = '';
+      for (var i = 0; i < rows.length; i++) {
+        var r = doc.createElement('span');
+        r.className = 'row ' + (rows[i][1] || '');
+        r.textContent = rows[i][0];
+        postsEl.appendChild(r);
+      }
+    }
+    function render(posts) {
+      var ok = [], i;
+      for (i = 0; i < (posts || []).length; i++) {
+        var p = posts[i];
+        if (p && typeof p === 'object' && typeof p.message === 'string' && p.message.replace(/\s/g, '').length) ok.push(p);
+      }
+      ok = ok.slice(-30).reverse();
+      postsEl.textContent = '';
+      if (!ok.length) {
+        setRows([['the wall is freshly painted — no posts yet. be the first.', 't-dim']]);
+        return;
+      }
+      var head = doc.createElement('span');
+      head.className = 'row t-dim';
+      head.textContent = '· ' + ok.length + (ok.length === 30 ? '+' : '') + ' posts · newest first ·';
+      postsEl.appendChild(head);
+      postsEl.appendChild(doc.createElement('span')).className = 'row';
+      for (i = 0; i < ok.length; i++) {
+        var p = ok[i];
+        var name = gh.clean(String(p.name || 'anonymous')).replace(/\s+/g, ' ').trim().slice(0, 24) || 'anonymous';
+        var msg = gh.clean(String(p.message)).replace(/\s+/g, ' ').trim().slice(0, 140);
+        var when = p.ts || p.t || p.time || p.date || '';
+        var h = doc.createElement('span');
+        h.className = 'row';
+        mkSeg(h, name, 'wp-name');
+        var ago = when ? gh.ago(when) : '';
+        if (ago) mkSeg(h, '  ·  ' + ago, 't-time');
+        postsEl.appendChild(h);
+        var m = doc.createElement('span');
+        m.className = 'row wp-msg';
+        m.textContent = '  ' + msg;
+        postsEl.appendChild(m);
+        postsEl.appendChild(doc.createElement('span')).className = 'row';
+      }
+    }
+    function load(force) {
+      if (!window.fetch || !window.Promise) {
+        setRows([['the wall needs a newer browser to load here — the raw feed lives at github.com/zyads/wall.', 't-dim']]);
+        return;
+      }
+      if (!force) {
+        try {
+          var hit = JSON.parse(sessionStorage.getItem('wall:data'));
+          if (hit && Date.now() - hit.t < 60000) { render(hit.p); return; }
+        } catch (e) { /* fall through */ }
+      }
+      if (budget <= 0) {
+        status('refresh budget spent for this visit — the wall is being polite to the CDN.', 't-err');
+        return;
+      }
+      budget--;
+      setRows([['fetching wall/data.json ...', 't-dim']]);
+      fetch(WALL_RAW, { cache: 'no-store' }).then(function (r) {
+        if (r.status === 404) { var e = new Error('nf'); e.nf = true; throw e; }
+        if (!r.ok) throw new Error('http ' + r.status);
+        return r.json();
+      }).then(function (data) {
+        var posts = (data && data.posts) || (data instanceof Array ? data : []);
+        if (!(posts instanceof Array)) posts = [];
+        try { sessionStorage.setItem('wall:data', JSON.stringify({ t: Date.now(), p: posts })); } catch (e) { /* fine */ }
+        render(posts);
+      }).catch(function (err) {
+        if (err && err.nf) setRows([['the wall repo exists but has nothing to say yet — freshly painted. come back soon.', 't-dim']]);
+        else setRows([['wall unreachable — offline, or the repo is not born yet. the feed reads straight from github.com/zyads/wall.', 't-err']]);
+      });
+    }
+    function setUnlocked(v) {
+      if (lockForm) lockForm.hidden = !!v;
+      if (postForm) postForm.hidden = !v;
+    }
+    wallAPI.setUnlocked = setUnlocked;
+    wallAPI.refresh = function () { load(true); };
+
+    if (compose) compose.hidden = false;
+    if (refreshBtn) {
+      refreshBtn.hidden = false;
+      refreshBtn.addEventListener('click', function () { load(true); });
+    }
+    if (isUnlocked()) {
+      setUnlocked(true);
+      status('key remembered from earlier this session — the wall is open.', 't-ok');
+    } else {
+      setUnlocked(false);
+    }
+
+    if (msgIn && countEl) {
+      msgIn.addEventListener('input', function () {
+        countEl.textContent = msgIn.value.length + '/140';
+      });
+    }
+    if (lockForm && ansIn) {
+      lockForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var guess = ansIn.value;
+        if (!guess.replace(/\s/g, '')) return;
+        status('checking ...', 't-dim');
+        checkAnswer(guess).then(function (ok) {
+          ansIn.value = '';
+          if (ok === null) { status('this browser lacks WebCrypto, so the lock cannot be checked here.', 't-err'); return; }
+          if (!ok) { status(snark(), 't-err'); return; }
+          grantAccess();
+          status('ACCESS GRANTED — the wall is yours. be kind; a robot moderates.', 't-grant');
+        });
+      });
+    }
+    if (postForm && msgIn) {
+      postForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var msg = gh.clean(msgIn.value).replace(/\s+/g, ' ').trim().slice(0, 140);
+        var name = gh.clean(nameIn ? nameIn.value : '').replace(/\s+/g, ' ').trim().slice(0, 24);
+        if (!msg) { status('write something first — you have 140 characters of anything.', 't-err'); return; }
+        if (!WALL_ENDPOINT) {
+          status('unlocked — but the write relay is still warming up (not deployed yet). your key is saved for this session; check back soon.', 't-err');
+          return;
+        }
+        if (Date.now() - lastPost < 30000) { status('easy there — one post per 30 seconds.', 't-err'); return; }
+        status('sending to the relay ...', 't-dim');
+        /* plain fetch, no custom headers: no preflight, no credential — the relay holds the only key */
+        fetch(WALL_ENDPOINT, { method: 'POST', body: JSON.stringify({ name: name, message: msg }) }).then(function (r) {
+          if (!r.ok) throw new Error('http ' + r.status);
+          lastPost = Date.now();
+          msgIn.value = '';
+          if (countEl) countEl.textContent = '0/140';
+          status('posted — a robot is moderating it now. it lands on the wall within a minute or so; refresh when ready.', 't-ok');
+          setTimeout(function () { load(true); }, 45000);
+        }).catch(function () {
+          status('relay unreachable or refused — try again in a minute.', 't-err');
+        });
+      });
+    }
+
+    /* eager, not lazy: an instant jump (End key, reduced motion) can skip
+       IntersectionObserver entirely — and this is one cached, budgeted fetch */
+    load(false);
   }
 
   /* ============================================================ */
@@ -1589,9 +2727,11 @@
     initCursor();
     initLiveCards();
     initTerminal();
+    initWall();
     try {
       console.log('%czyad@shehadeh:~$ %cwhoami', 'color:#38e0ff;font-weight:bold', 'color:#e9edf5');
-      console.log('%cSoftware engineer — developer platforms, build systems, applied AI tooling.\nEverything on this page is hand-rolled vanilla JS. The only requests leave for api.github.com, read-only. View source, it is all here.', 'color:#9aa3b8');
+      console.log('%cSoftware engineer — developer platforms, build systems, applied AI tooling.\nEverything on this page is hand-rolled vanilla JS. The only requests leave for api.github.com and the wall repo, read-only. View source, it is all here.', 'color:#9aa3b8');
+      console.log('%cps: the terminal in §04 answers to more than `help` admits. `hint` opens the trail — and the truly curious leave a trace.', 'color:#5f6880;font-style:italic');
     } catch (e) { /* no console, no problem */ }
   }
 
