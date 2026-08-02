@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Essays on build systems, dependency graphs, artifact provenance, and LLM agent tooling — by Zyad Shehadeh.">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Zyad Shehadeh">
+<link rel="canonical" href="https://zyads.github.io/blog.html">
+<meta property="og:title" content="Writing — Zyad Shehadeh">
+<meta property="og:description" content="Essays on build systems, dependency graphs, artifact provenance, and LLM agent tooling.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zyads.github.io/blog.html">
+<meta property="og:image" content="https://zyads.github.io/og-image.png">
+<meta property="og:site_name" content="Zyad Shehadeh">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Writing — Zyad Shehadeh">
+<meta name="twitter:description" content="Essays on build systems, dependency graphs, artifact provenance, and LLM agent tooling.">
+<meta name="twitter:image" content="https://zyads.github.io/og-image.png">
+<title>Writing — Zyad Shehadeh</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2306080f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%2338e0ff' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "@id": "https://zyads.github.io/blog.html",
+  "name": "Zyad Shehadeh — Writing",
+  "url": "https://zyads.github.io/blog.html",
+  "description": "Essays on build systems, dependency graphs, artifact provenance, and LLM agent tooling.",
+  "author": { "@type": "Person", "name": "Zyad Shehadeh", "url": "https://zyads.github.io/" },
+  "blogPost": [
+    {
+      "@type": "BlogPosting",
+      "headline": "Context Is a Budget, Not a Bucket",
+      "url": "https://zyads.github.io/posts/context-is-a-budget.html",
+      "datePublished": "2026-06-02"
+    },
+    {
+      "@type": "BlogPosting",
+      "headline": "Signing Without Hermeticity Is Theater",
+      "url": "https://zyads.github.io/posts/signing-without-hermeticity-is-theater.html",
+      "datePublished": "2026-03-14"
+    },
+    {
+      "@type": "BlogPosting",
+      "headline": "The Dependency Graph Is the Real Artifact",
+      "url": "https://zyads.github.io/posts/dependency-graph-is-the-real-artifact.html",
+      "datePublished": "2026-01-22"
+    },
+    {
+      "@type": "BlogPosting",
+      "headline": "Why Build Caches Miss",
+      "url": "https://zyads.github.io/posts/why-build-caches-miss.html",
+      "datePublished": "2025-11-08"
+    },
+    {
+      "@type": "BlogPosting",
+      "headline": "Storing Tree Relationships in a Table",
+      "url": "https://zyads.github.io/posts/storing-tree-relationships-in-a-table.html",
+      "datePublished": "2024-01-15"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListOrder": "https://schema.org/ItemListOrderDescending",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "url": "https://zyads.github.io/posts/context-is-a-budget.html" },
+    { "@type": "ListItem", "position": 2, "url": "https://zyads.github.io/posts/signing-without-hermeticity-is-theater.html" },
+    { "@type": "ListItem", "position": 3, "url": "https://zyads.github.io/posts/dependency-graph-is-the-real-artifact.html" },
+    { "@type": "ListItem", "position": 4, "url": "https://zyads.github.io/posts/why-build-caches-miss.html" },
+    { "@type": "ListItem", "position": 5, "url": "https://zyads.github.io/posts/storing-tree-relationships-in-a-table.html" }
+  ]
+}
+</script>
+<style>
+  :root {
+    --bg: #05070d;
+    --bg-2: #0a0e18;
+    --card: #0b101cd9;
+    --text: #e9edf5;
+    --prose: #c3cadb;
+    --muted: #9aa3b8;
+    --faint: #5f6880;
+    --c1: #38e0ff;   /* cyan */
+    --c2: #8b8cf8;   /* indigo */
+    --c3: #f472d0;   /* magenta */
+    --line: rgba(148,163,184,0.14);
+    color-scheme: dark;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: rgba(56,224,255,0.28); color: #fff; }
+
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  a { color: var(--c1); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  a:focus-visible {
+    outline: 2px solid var(--c1);
+    outline-offset: 3px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+
+  /* ---------- ambient background ---------- */
+  .aurora { position: fixed; inset: 0; z-index: -3; overflow: hidden; pointer-events: none; }
+  .aurora span {
+    position: absolute; width: 44vmax; height: 44vmax; border-radius: 50%;
+    filter: blur(90px); opacity: 0.13; will-change: transform;
+  }
+  .aurora .a1 { background: #0ea5e9; top: -18vmax; left: -10vmax; animation: drift1 26s ease-in-out infinite alternate; }
+  .aurora .a2 { background: #7c3aed; bottom: -20vmax; right: -12vmax; animation: drift2 31s ease-in-out infinite alternate; }
+  .aurora .a3 { background: #db2777; top: 45%; left: 60%; width: 28vmax; height: 28vmax; opacity: 0.08; animation: drift3 37s ease-in-out infinite alternate; }
+  @keyframes drift1 { to { transform: translate(9vmax, 7vmax) scale(1.15); } }
+  @keyframes drift2 { to { transform: translate(-8vmax, -6vmax) scale(1.1); } }
+  @keyframes drift3 { to { transform: translate(-10vmax, 6vmax); } }
+
+  .grain {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: 0.5;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="180" height="180" filter="url(%23n)" opacity="0.05"/></svg>');
+  }
+
+  /* ---------- nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.55rem clamp(1.25rem, 4vw, 3rem);
+    background: rgba(6,8,15,0.72);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .nav .logo {
+    font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .nav .logo:hover { text-decoration: none; }
+  .nav .logo b {
+    background: linear-gradient(120deg, var(--c1), var(--c3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nav ul { display: flex; gap: clamp(0.4rem, 2vw, 1.4rem); list-style: none; align-items: center; }
+  .nav ul a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.45rem;
+    color: var(--muted); font-size: 0.92rem;
+  }
+  .nav ul a:hover { color: var(--c1); text-decoration: none; }
+  @media (max-width: 520px) {
+    .nav .logo-tail { display: none; }
+    .nav ul a { font-size: 0.88rem; padding: 0 0.3rem; }
+  }
+  .nav ul a[aria-current="page"] { color: var(--text); }
+
+  /* ---------- layout ---------- */
+  .wrap { max-width: 52rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2.5rem); }
+  main { padding: clamp(3rem, 8vw, 5.5rem) 0 clamp(3.5rem, 8vw, 6rem); }
+
+  .head .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem; letter-spacing: 0.14em;
+    color: var(--c1);
+  }
+  .head h1 {
+    margin-top: 0.5rem;
+    font-size: clamp(2.1rem, 6vw, 3.1rem);
+    font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+  }
+  .head h1 b {
+    background: linear-gradient(120deg, var(--c1), var(--c2), var(--c3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight: inherit;
+  }
+  .head p.sub { margin-top: 1rem; color: var(--muted); max-width: 44rem; }
+
+  /* ---------- post list ---------- */
+  .posts { list-style: none; margin-top: clamp(2.4rem, 6vw, 3.6rem); display: flex; flex-direction: column; gap: 1.1rem; }
+  .post-card { position: relative; }
+  .post-card a.card {
+    display: block;
+    border: 1px solid var(--line); border-radius: 16px;
+    background: var(--card);
+    padding: 1.4rem 1.5rem 1.35rem;
+    color: var(--text);
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+  }
+  .post-card a.card:hover {
+    text-decoration: none;
+    border-color: rgba(56,224,255,0.38);
+    box-shadow: 0 18px 50px -22px rgba(56,224,255,0.22);
+    transform: translateY(-2px);
+  }
+  .post-card .top {
+    display: flex; align-items: baseline; gap: 0.4rem 1.1rem; flex-wrap: wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem; color: var(--faint); letter-spacing: 0.05em;
+  }
+  .post-card .top .tag { color: var(--c2); }
+  .post-card h2 {
+    margin-top: 0.45rem;
+    font-size: clamp(1.15rem, 3vw, 1.35rem);
+    font-weight: 700; letter-spacing: -0.015em; line-height: 1.3;
+  }
+  .post-card a.card:hover h2 { color: var(--c1); }
+  .post-card p.teaser { margin-top: 0.45rem; color: var(--muted); font-size: 0.95rem; max-width: 46rem; }
+  .post-card .read {
+    margin-top: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.85rem; font-weight: 600; color: var(--c1);
+  }
+  .post-card .read .arrow { transition: transform 0.3s ease; display: inline-block; }
+  .post-card a.card:hover .read .arrow { transform: translateX(3px); }
+
+  .year-sep {
+    list-style: none;
+    display: flex; align-items: center; gap: 1rem;
+    margin-top: 0.9rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; letter-spacing: 0.14em; color: var(--faint);
+  }
+  .year-sep::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 2.6rem 0 3.4rem; }
+  footer .fwrap {
+    max-width: 68rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 3rem);
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem;
+    font-size: 0.88rem; color: var(--faint);
+  }
+  footer nav { display: flex; gap: 1.5rem; }
+  footer a { color: var(--muted); display: inline-flex; align-items: center; min-height: 44px; }
+  footer a:hover { color: var(--c1); }
+
+  /* ---------- motion safety ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001s !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!--
+  HOW TO ADD THE NEXT POST (no build step — everything is by hand):
+  1. Copy an existing file in posts/ to posts/<new-slug>.html and edit it
+     (its head comment lists exactly what to change).
+  2. Add a card below — copy a <li class="post-card"> block, keep newest first,
+     and update href, <time datetime>, tag, title, teaser, read time.
+  3. Add the post to BOTH JSON-LD blocks in this file's <head>
+     (blogPost array + ItemList) and bump the ItemList positions.
+  4. Add a <url> entry for it in /sitemap.xml.
+-->
+
+<div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="logo" href="/" aria-label="Zyad Shehadeh — home"><b>zyad</b><span class="logo-tail">@shehadeh</span><span style="color:var(--faint)">:~$</span></a>
+  <nav aria-label="Site">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/blog.html" aria-current="page">Writing</a></li>
+      <li><a href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <div class="wrap">
+    <header class="head">
+      <p class="eyebrow">zyad@shehadeh:~$ ls writing/</p>
+      <h1><b>Writing</b></h1>
+      <p class="sub">Design-engineering notes from personal projects and open tooling &mdash; build systems, dependency graphs, artifact provenance, and tooling for LLM agents. Opinionated, concrete, occasionally wrong in instructive ways.</p>
+    </header>
+
+    <ul class="posts">
+      <li class="year-sep" aria-hidden="true">2026</li>
+
+      <li class="post-card">
+        <a class="card" href="/posts/context-is-a-budget.html">
+          <p class="top"><time datetime="2026-06-02">Jun 2, 2026</time><span>4 min read</span><span class="tag">#llm-tooling</span></p>
+          <h2>Context Is a Budget, Not a Bucket</h2>
+          <p class="teaser">Every tool you give an LLM agent is a program that spends its working memory on the model's behalf &mdash; usually badly. Output shaping, description compression, and the two costs of a wasted token.</p>
+          <span class="read">Read post <span class="arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+      </li>
+
+      <li class="post-card">
+        <a class="card" href="/posts/signing-without-hermeticity-is-theater.html">
+          <p class="top"><time datetime="2026-03-14">Mar 14, 2026</time><span>5 min read</span><span class="tag">#supply-chain</span></p>
+          <h2>Signing Without Hermeticity Is Theater</h2>
+          <p class="teaser">"This artifact came from that commit" decomposes into three claims, and the one nobody can sell you is the one that matters. Why the signature is just the envelope.</p>
+          <span class="read">Read post <span class="arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+      </li>
+
+      <li class="post-card">
+        <a class="card" href="/posts/dependency-graph-is-the-real-artifact.html">
+          <p class="top"><time datetime="2026-01-22">Jan 22, 2026</time><span>5 min read</span><span class="tag">#build-systems</span></p>
+          <h2>The Dependency Graph Is the Real Artifact</h2>
+          <p class="teaser">Blast-radius queries, cycle ratchets, critical paths, and diffing edges in code review &mdash; four things a file tree structurally cannot tell you.</p>
+          <span class="read">Read post <span class="arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+      </li>
+
+      <li class="year-sep" aria-hidden="true">2025</li>
+
+      <li class="post-card">
+        <a class="card" href="/posts/why-build-caches-miss.html">
+          <p class="top"><time datetime="2025-11-08">Nov 8, 2025</time><span>5 min read</span><span class="tag">#build-systems</span></p>
+          <h2>Why Build Caches Miss</h2>
+          <p class="teaser">A cache never misses because it's too small &mdash; it misses because you lied to it. Timestamps, absolute paths, env leakage, and the two-build test that catches them all.</p>
+          <span class="read">Read post <span class="arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+      </li>
+
+      <li class="year-sep" aria-hidden="true">2024</li>
+
+      <li class="post-card">
+        <a class="card" href="/posts/storing-tree-relationships-in-a-table.html">
+          <p class="top"><time datetime="2024-01-15">Jan 15, 2024</time><span>3 min read</span><span class="tag">#databases</span></p>
+          <h2>Storing Tree Relationships in a Table</h2>
+          <p class="teaser">Adjacency lists, path enumeration, and nested sets: three ways to flatten a tree into rows, and which query each one makes fast.</p>
+          <span class="read">Read post <span class="arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <div class="fwrap">
+    <span>Zyad Shehadeh &middot; Wilton, CT</span>
+    <nav aria-label="Profiles">
+      <a href="https://github.com/zyads" rel="me">GitHub</a>
+      <a href="https://linkedin.com/in/zyads" rel="me">LinkedIn</a>
+    </nav>
+    <span>Hand-built &mdash; vanilla HTML/CSS, zero scripts on this page, no trackers.</span>
+  </div>
+</footer>
+
+</body>
+</html>

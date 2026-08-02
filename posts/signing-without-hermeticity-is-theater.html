@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="What “this artifact came from that commit” actually requires, and why a signature alone proves almost nothing.">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Zyad Shehadeh">
+<link rel="canonical" href="https://zyads.github.io/posts/signing-without-hermeticity-is-theater.html">
+<meta property="og:title" content="Signing Without Hermeticity Is Theater">
+<meta property="og:description" content="What “this artifact came from that commit” actually requires, and why a signature alone proves almost nothing.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zyads.github.io/posts/signing-without-hermeticity-is-theater.html">
+<meta property="og:image" content="https://zyads.github.io/og-image.png">
+<meta property="og:site_name" content="Zyad Shehadeh">
+<meta property="article:published_time" content="2026-03-14">
+<meta property="article:author" content="https://zyads.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Signing Without Hermeticity Is Theater">
+<meta name="twitter:description" content="What “this artifact came from that commit” actually requires, and why a signature alone proves almost nothing.">
+<meta name="twitter:image" content="https://zyads.github.io/og-image.png">
+<title>Signing Without Hermeticity Is Theater &mdash; Zyad Shehadeh</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2306080f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%2338e0ff' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Signing Without Hermeticity Is Theater",
+  "description": "What “this artifact came from that commit” actually requires, and why a signature alone proves almost nothing.",
+  "datePublished": "2026-03-14",
+  "dateModified": "2026-03-14",
+  "url": "https://zyads.github.io/posts/signing-without-hermeticity-is-theater.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zyads.github.io/posts/signing-without-hermeticity-is-theater.html"
+  },
+  "image": "https://zyads.github.io/og-image.png",
+  "author": {
+    "@type": "Person",
+    "name": "Zyad Shehadeh",
+    "url": "https://zyads.github.io/"
+  },
+  "isPartOf": {
+    "@type": "Blog",
+    "@id": "https://zyads.github.io/blog.html",
+    "name": "Zyad Shehadeh — Writing"
+  }
+}
+</script>
+<style>
+  :root {
+    --bg: #05070d;
+    --bg-2: #0a0e18;
+    --card: #0b101cd9;
+    --text: #e9edf5;
+    --prose: #c3cadb;
+    --muted: #9aa3b8;
+    --faint: #5f6880;
+    --c1: #38e0ff;   /* cyan */
+    --c2: #8b8cf8;   /* indigo */
+    --c3: #f472d0;   /* magenta */
+    --line: rgba(148,163,184,0.14);
+    color-scheme: dark;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.72;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: rgba(56,224,255,0.28); color: #fff; }
+
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  a { color: var(--c1); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  a:focus-visible {
+    outline: 2px solid var(--c1);
+    outline-offset: 3px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+
+  /* ---------- ambient background (calmer than home — this is for reading) ---------- */
+  .aurora { position: fixed; inset: 0; z-index: -3; overflow: hidden; pointer-events: none; }
+  .aurora span {
+    position: absolute; width: 44vmax; height: 44vmax; border-radius: 50%;
+    filter: blur(90px); opacity: 0.10; will-change: transform;
+  }
+  .aurora .a1 { background: #0ea5e9; top: -20vmax; left: -12vmax; animation: drift1 30s ease-in-out infinite alternate; }
+  .aurora .a2 { background: #7c3aed; bottom: -22vmax; right: -14vmax; animation: drift2 36s ease-in-out infinite alternate; }
+  @keyframes drift1 { to { transform: translate(7vmax, 6vmax) scale(1.1); } }
+  @keyframes drift2 { to { transform: translate(-6vmax, -5vmax) scale(1.08); } }
+
+  .grain {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: 0.5;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="180" height="180" filter="url(%23n)" opacity="0.05"/></svg>');
+  }
+
+  /* ---------- nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.55rem clamp(1.25rem, 4vw, 3rem);
+    background: rgba(6,8,15,0.72);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .nav .logo {
+    font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .nav .logo:hover { text-decoration: none; }
+  .nav .logo b {
+    background: linear-gradient(120deg, var(--c1), var(--c3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nav ul { display: flex; gap: clamp(0.4rem, 2vw, 1.4rem); list-style: none; align-items: center; }
+  .nav ul a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.45rem;
+    color: var(--muted); font-size: 0.92rem;
+  }
+  .nav ul a:hover { color: var(--c1); text-decoration: none; }
+  @media (max-width: 520px) {
+    .nav .logo-tail { display: none; }
+    .nav ul a { font-size: 0.88rem; padding: 0 0.3rem; }
+  }
+  .nav ul a[aria-current="page"] { color: var(--text); }
+
+  /* ---------- article layout ---------- */
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2.25rem); }
+  main { padding: clamp(2.6rem, 7vw, 5rem) 0 clamp(3.5rem, 8vw, 6rem); }
+
+  .crumb {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; letter-spacing: 0.06em; color: var(--faint);
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .crumb a { color: var(--faint); }
+  .crumb a:hover { color: var(--c1); text-decoration: none; }
+
+  article h1 {
+    margin-top: 0.4rem;
+    font-size: clamp(1.85rem, 5.5vw, 2.6rem);
+    font-weight: 800; letter-spacing: -0.025em; line-height: 1.14;
+    text-wrap: balance;
+  }
+  .rule {
+    height: 2px; width: 68px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--c1), var(--c3));
+    margin: 1.25rem 0 1.1rem;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 0.3rem 1.15rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; color: var(--faint); letter-spacing: 0.05em;
+  }
+  .meta .tag { color: var(--c2); }
+
+  /* ---------- prose ---------- */
+  .prose { margin-top: clamp(1.8rem, 4vw, 2.6rem); max-width: 70ch; }
+  .prose > * + * { margin-top: 1.15rem; }
+  .prose p { color: var(--prose); }
+  .prose strong { color: var(--text); font-weight: 650; }
+  .prose h2 {
+    margin-top: 2.7rem;
+    font-size: 1.42rem; font-weight: 750; letter-spacing: -0.015em; color: var(--text);
+  }
+  .prose h3 { margin-top: 2.1rem; font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .prose ul, .prose ol {
+    padding-left: 1.3rem; color: var(--prose);
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .prose li::marker { color: var(--c2); }
+  .prose blockquote {
+    border-left: 2px solid var(--c2);
+    padding: 0.15rem 0 0.15rem 1.1rem;
+    color: var(--muted); font-style: italic;
+  }
+  .prose hr { border: 0; height: 1px; background: var(--line); margin: 2.4rem 0; }
+
+  .prose code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em; color: var(--c1);
+    background: rgba(56,224,255,0.08);
+    border: 1px solid rgba(56,224,255,0.16);
+    padding: 0.1em 0.4em; border-radius: 6px;
+    overflow-wrap: break-word;
+  }
+  .prose pre {
+    margin-top: 1.35rem;
+    background: #070b14; border: 1px solid var(--line); border-radius: 12px;
+    padding: 1rem 1.15rem; overflow-x: auto;
+  }
+  .prose pre code {
+    background: none; border: 0; padding: 0;
+    color: #cfe8f5; font-size: 0.84rem; line-height: 1.65;
+  }
+  /* hand-rolled highlighting */
+  .kw  { color: var(--c3); }                       /* keyword */
+  .fn  { color: var(--c1); }                       /* function / flag */
+  .st  { color: var(--c2); }                       /* string */
+  .num { color: var(--c1); }                       /* number */
+  .cm  { color: var(--faint); font-style: italic; }/* comment */
+
+  .aside {
+    border: 1px solid var(--line); border-radius: 12px;
+    background: var(--card);
+    padding: 1rem 1.2rem;
+    color: var(--muted); font-size: 0.95rem;
+  }
+  .aside b { color: var(--text); }
+
+  /* ---------- prev / next ---------- */
+  .pagenav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    margin-top: clamp(3rem, 7vw, 4.2rem);
+  }
+  @media (max-width: 560px) { .pagenav { grid-template-columns: 1fr; } }
+  .pagenav a {
+    border: 1px solid var(--line); border-radius: 14px;
+    background: var(--card);
+    padding: 1rem 1.2rem; min-height: 44px;
+    display: flex; flex-direction: column; gap: 0.25rem;
+    color: var(--text);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .pagenav a:hover {
+    text-decoration: none;
+    border-color: rgba(56,224,255,0.4);
+    box-shadow: 0 14px 40px -20px rgba(56,224,255,0.22);
+  }
+  .pagenav .lbl {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint);
+  }
+  .pagenav .t { font-weight: 650; font-size: 0.97rem; letter-spacing: -0.01em; }
+  .pagenav .next { text-align: right; align-items: flex-end; grid-column: 2; }
+  @media (max-width: 560px) { .pagenav .next { grid-column: auto; } }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 2.6rem 0 3.4rem; }
+  footer .fwrap {
+    max-width: 68rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 3rem);
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem;
+    font-size: 0.88rem; color: var(--faint);
+  }
+  footer nav { display: flex; gap: 1.5rem; }
+  footer a { color: var(--muted); display: inline-flex; align-items: center; min-height: 44px; }
+  footer a:hover { color: var(--c1); }
+
+  /* ---------- motion safety ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001s !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="logo" href="/" aria-label="Zyad Shehadeh — home"><b>zyad</b><span class="logo-tail">@shehadeh</span><span style="color:var(--faint)">:~$</span></a>
+  <nav aria-label="Site">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/blog.html">Writing</a></li>
+      <li><a href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <div class="wrap">
+    <article>
+      <p class="crumb"><a href="/blog.html">&larr; all posts</a></p>
+      <h1>Signing Without Hermeticity Is Theater</h1>
+      <div class="rule" aria-hidden="true"></div>
+      <p class="meta">
+        <time datetime="2026-03-14">March 14, 2026</time>
+        <span>5 min read</span>
+        <span class="tag">#supply-chain</span>
+      </p>
+
+      <div class="prose">
+<p>A signature on an artifact proves exactly one thing: a particular key blessed a particular pile of bytes. It says nothing about where the bytes came from. If the build that produced them could read the network, pull <code>latest</code> tags, or absorb whatever happened to be installed on the runner, then "signed" means "we vouch for something we cannot describe." That's not supply-chain security. It's a notarized shrug.</p>
+
+<p>The claim everyone actually wants to make is stronger: <em>this artifact was produced from that commit, by this recipe, and nothing else</em>. I spent a while building exactly this for my own projects &mdash; a small pipeline that could take any binary I'd published and answer "which commit, which toolchain, prove it" &mdash; and the exercise made it very clear which parts of provenance are cryptography and which parts are build discipline. The cryptography is the easy 10%.</p>
+
+<h2>What the claim actually decomposes into</h2>
+
+<p>"This artifact came from that commit" is really three separate claims, and each one fails independently:</p>
+
+<ul>
+<li><strong>Identity:</strong> the artifact you're holding is the one that was attested. Solved by content addressing &mdash; refer to artifacts by digest, never by name or tag. This part is genuinely trivial.</li>
+<li><strong>Binding:</strong> some trusted party asserts "I ran build B on commit C and it produced digest D." This is what signing gives you: an attestation, signed by the builder, linking inputs to outputs. Also mostly solved &mdash; this is in-toto/SLSA-style provenance, and the tooling is fine.</li>
+<li><strong>Determination:</strong> commit C plus recipe B actually <em>determines</em> digest D &mdash; the build had no other inputs. This is the hard one, nobody can sell it to you, and without it the other two are decoration.</li>
+</ul>
+
+<p>Determination is just hermeticity wearing a suit. If the build can reach the network, then "commit C" is not the input set &mdash; the input set is "commit C, plus the state of every remote endpoint the build touched, at the moment it touched them." Nobody attests to that, because nobody can.</p>
+
+<h2>The holes, concretely</h2>
+
+<p>Here's a Dockerfile that appears in some form in most repos on earth:</p>
+
+<pre><code><span class="kw">FROM</span> python:3.12          <span class="cm"># mutable tag — different bytes next month</span>
+<span class="kw">RUN</span> apt-get update &amp;&amp; \
+    apt-get install -y libfoo   <span class="cm"># whatever version the mirror serves today</span>
+<span class="kw">RUN</span> pip install -r requirements.txt  <span class="cm"># resolved at build time if unpinned</span></code></pre>
+
+<p>Build this from the same commit on two different days and you can get materially different artifacts &mdash; different base image, different system libraries, different transitive Python dependencies. Sign both and the signatures are equally valid, because signatures don't know the builds diverged. The commit never determined the output; it merely suggested it. Every floating reference is a hole in the provenance story:</p>
+
+<pre><code><span class="cm"># each of these replaces "an input I named" with "an input I pinned"</span>
+<span class="kw">FROM</span> python:3.12<span class="fn">@sha256:aa1b3&hellip;</span>          <span class="cm"># digest, not tag</span>
+pip install <span class="fn">--require-hashes</span> -r requirements.lock
+go mod verify                            <span class="cm"># go.sum is a lockfile with teeth</span>
+bazel build <span class="fn">--experimental_repository_hash_file</span>=&hellip;</code></pre>
+
+<p>The pattern is one rule applied everywhere: <strong>a build may only fetch what it can name by hash, and the hashes live in the commit.</strong> Do that, and "commit C" finally is the complete input set &mdash; the network becomes a content-addressed store instead of an oracle, and it can be cut off entirely after the fetch phase. This is exactly why Bazel splits fetching from building and why sandboxed actions get no network: not paranoia, but making determination true by construction.</p>
+
+<h2>Verification is a rebuild, not a lookup</h2>
+
+<p>Once determination holds, provenance becomes <em>checkable</em>, and this is the payoff that makes the discipline worth it. Anyone can verify the claim by re-running it:</p>
+
+<pre><code><span class="cm"># the only provenance check that means anything</span>
+git checkout <span class="st">$COMMIT</span>
+./build.sh
+sha256sum out/app.tar | diff - <span class="st">attested-digest.txt</span></code></pre>
+
+<p>If the build is reproducible, verification requires trusting no one &mdash; not the CI vendor, not the signing key, not me. Two independent rebuilders agreeing on a digest is a stronger statement than any signature, because keys get stolen and CI gets compromised, but two colluding compromises that produce the same wrong hash is a much taller order. Reproducible-builds.org has run this play for a decade: independent rebuilders as a distributed check on the official binaries. Bit-for-bit reproducibility is the goal, and it's genuinely achievable for most software (pin toolchains, kill timestamps and path leakage, sort everything you emit). Where it's not yet achievable, hermetic-and-attested is the honest fallback: the builder still vouches, but at least it vouches for a closed input set it can enumerate in the attestation.</p>
+
+<h2>The theater version</h2>
+
+<p>The theater version of supply-chain security does the steps in the wrong order: adopt signing (visible, easy, demo-friendly), generate SBOMs from whatever the non-hermetic build happened to download (a guest list written after the party), and leave the build itself able to fetch arbitrary bytes from the internet at 2&nbsp;a.m. The result photographs well and proves nothing, because the thing being signed was never a function of the thing being claimed.</p>
+
+<p>The order that works is the unglamorous one: pin everything to digests, close the build's inputs, make output deterministic, <em>then</em> sign &mdash; at which point the signature is finally attached to a claim precise enough to be worth making. Hermeticity isn't a prerequisite you check off before doing provenance. It <em>is</em> the provenance. The signature is just the envelope.</p>
+      </div>
+    </article>
+
+    <nav class="pagenav" aria-label="More posts">
+      <a href="/posts/dependency-graph-is-the-real-artifact.html" rel="prev">
+        <span class="lbl">&larr; Older</span>
+        <span class="t">The Dependency Graph Is the Real Artifact</span>
+      </a>
+      <a class="next" href="/posts/context-is-a-budget.html" rel="next">
+        <span class="lbl">Newer &rarr;</span>
+        <span class="t">Context Is a Budget, Not a Bucket</span>
+      </a>
+    </nav>
+  </div>
+</main>
+
+<footer>
+  <div class="fwrap">
+    <span>Zyad Shehadeh &middot; Wilton, CT</span>
+    <nav aria-label="Profiles">
+      <a href="https://github.com/zyads" rel="me">GitHub</a>
+      <a href="https://linkedin.com/in/zyads" rel="me">LinkedIn</a>
+    </nav>
+    <span>Hand-built &mdash; vanilla HTML/CSS, zero scripts on this page, no trackers.</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Three ways to put a tree in a relational database — adjacency list, path enumeration, nested sets — and what each one costs you.">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Zyad Shehadeh">
+<link rel="canonical" href="https://zyads.github.io/posts/storing-tree-relationships-in-a-table.html">
+<meta property="og:title" content="Storing Tree Relationships in a Table">
+<meta property="og:description" content="Three ways to put a tree in a relational database — adjacency list, path enumeration, nested sets — and what each one costs you.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zyads.github.io/posts/storing-tree-relationships-in-a-table.html">
+<meta property="og:image" content="https://zyads.github.io/og-image.png">
+<meta property="og:site_name" content="Zyad Shehadeh">
+<meta property="article:published_time" content="2024-01-15">
+<meta property="article:author" content="https://zyads.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Storing Tree Relationships in a Table">
+<meta name="twitter:description" content="Three ways to put a tree in a relational database — adjacency list, path enumeration, nested sets — and what each one costs you.">
+<meta name="twitter:image" content="https://zyads.github.io/og-image.png">
+<title>Storing Tree Relationships in a Table &mdash; Zyad Shehadeh</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2306080f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%2338e0ff' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Storing Tree Relationships in a Table",
+  "description": "Three ways to put a tree in a relational database — adjacency list, path enumeration, nested sets — and what each one costs you.",
+  "datePublished": "2024-01-15",
+  "dateModified": "2024-01-15",
+  "url": "https://zyads.github.io/posts/storing-tree-relationships-in-a-table.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zyads.github.io/posts/storing-tree-relationships-in-a-table.html"
+  },
+  "image": "https://zyads.github.io/og-image.png",
+  "author": {
+    "@type": "Person",
+    "name": "Zyad Shehadeh",
+    "url": "https://zyads.github.io/"
+  },
+  "isPartOf": {
+    "@type": "Blog",
+    "@id": "https://zyads.github.io/blog.html",
+    "name": "Zyad Shehadeh — Writing"
+  }
+}
+</script>
+<style>
+  :root {
+    --bg: #05070d;
+    --bg-2: #0a0e18;
+    --card: #0b101cd9;
+    --text: #e9edf5;
+    --prose: #c3cadb;
+    --muted: #9aa3b8;
+    --faint: #5f6880;
+    --c1: #38e0ff;   /* cyan */
+    --c2: #8b8cf8;   /* indigo */
+    --c3: #f472d0;   /* magenta */
+    --line: rgba(148,163,184,0.14);
+    color-scheme: dark;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.72;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: rgba(56,224,255,0.28); color: #fff; }
+
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  a { color: var(--c1); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  a:focus-visible {
+    outline: 2px solid var(--c1);
+    outline-offset: 3px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+
+  /* ---------- ambient background (calmer than home — this is for reading) ---------- */
+  .aurora { position: fixed; inset: 0; z-index: -3; overflow: hidden; pointer-events: none; }
+  .aurora span {
+    position: absolute; width: 44vmax; height: 44vmax; border-radius: 50%;
+    filter: blur(90px); opacity: 0.10; will-change: transform;
+  }
+  .aurora .a1 { background: #0ea5e9; top: -20vmax; left: -12vmax; animation: drift1 30s ease-in-out infinite alternate; }
+  .aurora .a2 { background: #7c3aed; bottom: -22vmax; right: -14vmax; animation: drift2 36s ease-in-out infinite alternate; }
+  @keyframes drift1 { to { transform: translate(7vmax, 6vmax) scale(1.1); } }
+  @keyframes drift2 { to { transform: translate(-6vmax, -5vmax) scale(1.08); } }
+
+  .grain {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: 0.5;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="180" height="180" filter="url(%23n)" opacity="0.05"/></svg>');
+  }
+
+  /* ---------- nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.55rem clamp(1.25rem, 4vw, 3rem);
+    background: rgba(6,8,15,0.72);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .nav .logo {
+    font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .nav .logo:hover { text-decoration: none; }
+  .nav .logo b {
+    background: linear-gradient(120deg, var(--c1), var(--c3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nav ul { display: flex; gap: clamp(0.4rem, 2vw, 1.4rem); list-style: none; align-items: center; }
+  .nav ul a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.45rem;
+    color: var(--muted); font-size: 0.92rem;
+  }
+  .nav ul a:hover { color: var(--c1); text-decoration: none; }
+  @media (max-width: 520px) {
+    .nav .logo-tail { display: none; }
+    .nav ul a { font-size: 0.88rem; padding: 0 0.3rem; }
+  }
+  .nav ul a[aria-current="page"] { color: var(--text); }
+
+  /* ---------- article layout ---------- */
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2.25rem); }
+  main { padding: clamp(2.6rem, 7vw, 5rem) 0 clamp(3.5rem, 8vw, 6rem); }
+
+  .crumb {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; letter-spacing: 0.06em; color: var(--faint);
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .crumb a { color: var(--faint); }
+  .crumb a:hover { color: var(--c1); text-decoration: none; }
+
+  article h1 {
+    margin-top: 0.4rem;
+    font-size: clamp(1.85rem, 5.5vw, 2.6rem);
+    font-weight: 800; letter-spacing: -0.025em; line-height: 1.14;
+    text-wrap: balance;
+  }
+  .rule {
+    height: 2px; width: 68px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--c1), var(--c3));
+    margin: 1.25rem 0 1.1rem;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 0.3rem 1.15rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; color: var(--faint); letter-spacing: 0.05em;
+  }
+  .meta .tag { color: var(--c2); }
+
+  /* ---------- prose ---------- */
+  .prose { margin-top: clamp(1.8rem, 4vw, 2.6rem); max-width: 70ch; }
+  .prose > * + * { margin-top: 1.15rem; }
+  .prose p { color: var(--prose); }
+  .prose strong { color: var(--text); font-weight: 650; }
+  .prose h2 {
+    margin-top: 2.7rem;
+    font-size: 1.42rem; font-weight: 750; letter-spacing: -0.015em; color: var(--text);
+  }
+  .prose h3 { margin-top: 2.1rem; font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .prose ul, .prose ol {
+    padding-left: 1.3rem; color: var(--prose);
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .prose li::marker { color: var(--c2); }
+  .prose blockquote {
+    border-left: 2px solid var(--c2);
+    padding: 0.15rem 0 0.15rem 1.1rem;
+    color: var(--muted); font-style: italic;
+  }
+  .prose hr { border: 0; height: 1px; background: var(--line); margin: 2.4rem 0; }
+
+  .prose code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em; color: var(--c1);
+    background: rgba(56,224,255,0.08);
+    border: 1px solid rgba(56,224,255,0.16);
+    padding: 0.1em 0.4em; border-radius: 6px;
+    overflow-wrap: break-word;
+  }
+  .prose pre {
+    margin-top: 1.35rem;
+    background: #070b14; border: 1px solid var(--line); border-radius: 12px;
+    padding: 1rem 1.15rem; overflow-x: auto;
+  }
+  .prose pre code {
+    background: none; border: 0; padding: 0;
+    color: #cfe8f5; font-size: 0.84rem; line-height: 1.65;
+  }
+  /* hand-rolled highlighting */
+  .kw  { color: var(--c3); }                       /* keyword */
+  .fn  { color: var(--c1); }                       /* function / flag */
+  .st  { color: var(--c2); }                       /* string */
+  .num { color: var(--c1); }                       /* number */
+  .cm  { color: var(--faint); font-style: italic; }/* comment */
+
+  .aside {
+    border: 1px solid var(--line); border-radius: 12px;
+    background: var(--card);
+    padding: 1rem 1.2rem;
+    color: var(--muted); font-size: 0.95rem;
+  }
+  .aside b { color: var(--text); }
+
+  /* ---------- prev / next ---------- */
+  .pagenav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    margin-top: clamp(3rem, 7vw, 4.2rem);
+  }
+  @media (max-width: 560px) { .pagenav { grid-template-columns: 1fr; } }
+  .pagenav a {
+    border: 1px solid var(--line); border-radius: 14px;
+    background: var(--card);
+    padding: 1rem 1.2rem; min-height: 44px;
+    display: flex; flex-direction: column; gap: 0.25rem;
+    color: var(--text);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .pagenav a:hover {
+    text-decoration: none;
+    border-color: rgba(56,224,255,0.4);
+    box-shadow: 0 14px 40px -20px rgba(56,224,255,0.22);
+  }
+  .pagenav .lbl {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint);
+  }
+  .pagenav .t { font-weight: 650; font-size: 0.97rem; letter-spacing: -0.01em; }
+  .pagenav .next { text-align: right; align-items: flex-end; grid-column: 2; }
+  @media (max-width: 560px) { .pagenav .next { grid-column: auto; } }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 2.6rem 0 3.4rem; }
+  footer .fwrap {
+    max-width: 68rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 3rem);
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem;
+    font-size: 0.88rem; color: var(--faint);
+  }
+  footer nav { display: flex; gap: 1.5rem; }
+  footer a { color: var(--muted); display: inline-flex; align-items: center; min-height: 44px; }
+  footer a:hover { color: var(--c1); }
+
+  /* ---------- motion safety ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001s !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="logo" href="/" aria-label="Zyad Shehadeh — home"><b>zyad</b><span class="logo-tail">@shehadeh</span><span style="color:var(--faint)">:~$</span></a>
+  <nav aria-label="Site">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/blog.html">Writing</a></li>
+      <li><a href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <div class="wrap">
+    <article>
+      <p class="crumb"><a href="/blog.html">&larr; all posts</a></p>
+      <h1>Storing Tree Relationships in a Table</h1>
+      <div class="rule" aria-hidden="true"></div>
+      <p class="meta">
+        <time datetime="2024-01-15">January 15, 2024</time>
+        <span>3 min read</span>
+        <span class="tag">#databases</span>
+      </p>
+
+      <div class="prose">
+<p>Relational tables are flat; trees are not. Storing hierarchical data &mdash; categories, org charts, comment threads, filesystem-like structures &mdash; in a relational database means choosing how to flatten the tree, and each of the standard flattenings buys query speed in one direction by paying for it in another. There are three classic models, and the right one depends entirely on which operations dominate: reading down, reading up, or restructuring.</p>
+
+<h2>Adjacency list</h2>
+
+<p>The obvious encoding: every row points at its parent.</p>
+
+<pre><code><span class="kw">CREATE TABLE</span> tree (
+    node_id   INT <span class="kw">PRIMARY KEY</span>,
+    parent_id INT <span class="kw">NULL REFERENCES</span> tree (node_id)
+);</code></pre>
+
+<p>Immediate children and the immediate parent are one cheap query each. The trouble starts the moment you want a whole subtree or a full ancestor chain: each level is another self-join, so query cost grows with tree depth. Modern databases soften this with recursive CTEs, which walk the tree in a single statement:</p>
+
+<pre><code><span class="kw">WITH RECURSIVE</span> subtree <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> node_id <span class="kw">FROM</span> tree <span class="kw">WHERE</span> node_id = <span class="num">42</span>
+    <span class="kw">UNION ALL</span>
+    <span class="kw">SELECT</span> t.node_id
+    <span class="kw">FROM</span> tree t <span class="kw">JOIN</span> subtree s <span class="kw">ON</span> t.parent_id = s.node_id
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> subtree;</code></pre>
+
+<p><strong>Pros:</strong> simplest possible schema; writes are trivial &mdash; moving a node is a one-column update; referential integrity comes free from the foreign key.
+<br><strong>Cons:</strong> deep traversals are recursive by nature, and without CTE support they degrade into N queries for N levels.</p>
+
+<h2>Path enumeration</h2>
+
+<p>Instead of storing one edge per row, store the entire path from the root:</p>
+
+<pre><code><span class="kw">CREATE TABLE</span> tree (
+    node_id INT <span class="kw">PRIMARY KEY</span>,
+    path    VARCHAR(255)  <span class="cm">-- '1.4.42' = node 42 under 4 under 1</span>
+);</code></pre>
+
+<p>Now ancestry is string manipulation. All ancestors of a node are encoded in its own row &mdash; split the path and you have them. All descendants are a prefix match:</p>
+
+<pre><code><span class="kw">SELECT</span> * <span class="kw">FROM</span> tree
+<span class="kw">WHERE</span> path <span class="kw">LIKE</span> <span class="st">'1.4.%'</span>;   <span class="cm">-- everything under node 4</span></code></pre>
+
+<p>The cost lands on writes: moving a subtree means rewriting the path of every node inside it, and the database can't guarantee the paths stay consistent &mdash; the structure lives in a string the engine doesn't understand.</p>
+
+<p><strong>Pros:</strong> ancestor and subtree reads are fast and index-friendly; depth is just the number of separators.
+<br><strong>Cons:</strong> moves and re-parenting rewrite many rows; no integrity enforcement; the path column imposes a depth limit you will meet eventually.</p>
+
+<h2>Nested sets</h2>
+
+<p>The clever one. Do a depth-first walk of the tree and stamp each node with a number on the way in (<code>left_value</code>) and on the way out (<code>right_value</code>). A node's descendants are exactly the nodes whose interval sits inside its own.</p>
+
+<pre><code><span class="kw">CREATE TABLE</span> tree (
+    node_id     INT <span class="kw">PRIMARY KEY</span>,
+    left_value  INT,
+    right_value INT
+);
+
+<span class="cm">-- entire subtree of node 42, no recursion, no string ops</span>
+<span class="kw">SELECT</span> child.*
+<span class="kw">FROM</span> tree child, tree parent
+<span class="kw">WHERE</span> parent.node_id = <span class="num">42</span>
+  <span class="kw">AND</span> child.left_value <span class="kw">BETWEEN</span> parent.left_value <span class="kw">AND</span> parent.right_value;</code></pre>
+
+<p>Subtree reads become pure range scans &mdash; beautiful for read-heavy trees. But the numbering is global: inserting a single node shifts the left/right values of, on average, half the table. Every structural change is a renumbering exercise.</p>
+
+<p><strong>Pros:</strong> subtree and leaf queries are fast range scans; aggregates over subtrees are easy.
+<br><strong>Cons:</strong> inserts, deletes, and moves are expensive and fiddly; the encoding is easy to corrupt and hard to repair by hand.</p>
+
+<h2>Choosing</h2>
+
+<p>The decision reduces to your read/write mix. Mostly-static, read-heavy trees (product categories, geographies) tolerate nested sets' write pain and enjoy the fast reads. Trees that restructure constantly (drag-and-drop org charts) want the adjacency list's one-column moves, with recursive CTEs doing the traversal work. Path enumeration sits in the middle and is often the pragmatic pick when you mostly ask "give me everything under X" and rarely move things.</p>
+
+<p>There's no free lunch among the three &mdash; each stores the same information and merely chooses which query gets to be an index lookup and which becomes a rewrite of half the table. Pick by profiling the questions you'll actually ask, not by elegance of the encoding.</p>
+      </div>
+    </article>
+
+    <nav class="pagenav" aria-label="More posts">
+      <a class="next" href="/posts/why-build-caches-miss.html" rel="next">
+        <span class="lbl">Newer &rarr;</span>
+        <span class="t">Why Build Caches Miss</span>
+      </a>
+    </nav>
+  </div>
+</main>
+
+<footer>
+  <div class="fwrap">
+    <span>Zyad Shehadeh &middot; Wilton, CT</span>
+    <nav aria-label="Profiles">
+      <a href="https://github.com/zyads" rel="me">GitHub</a>
+      <a href="https://linkedin.com/in/zyads" rel="me">LinkedIn</a>
+    </nav>
+    <span>Hand-built &mdash; vanilla HTML/CSS, zero scripts on this page, no trackers.</span>
+  </div>
+</footer>
+
+</body>
+</html>

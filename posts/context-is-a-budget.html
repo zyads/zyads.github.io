@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Designing tool interfaces for LLM agents: output shaping, description compression, and why the cheapest token is the one never emitted.">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Zyad Shehadeh">
+<link rel="canonical" href="https://zyads.github.io/posts/context-is-a-budget.html">
+<meta property="og:title" content="Context Is a Budget, Not a Bucket">
+<meta property="og:description" content="Designing tool interfaces for LLM agents: output shaping, description compression, and why the cheapest token is the one never emitted.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zyads.github.io/posts/context-is-a-budget.html">
+<meta property="og:image" content="https://zyads.github.io/og-image.png">
+<meta property="og:site_name" content="Zyad Shehadeh">
+<meta property="article:published_time" content="2026-06-02">
+<meta property="article:author" content="https://zyads.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Context Is a Budget, Not a Bucket">
+<meta name="twitter:description" content="Designing tool interfaces for LLM agents: output shaping, description compression, and why the cheapest token is the one never emitted.">
+<meta name="twitter:image" content="https://zyads.github.io/og-image.png">
+<title>Context Is a Budget, Not a Bucket &mdash; Zyad Shehadeh</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2306080f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%2338e0ff' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Context Is a Budget, Not a Bucket",
+  "description": "Designing tool interfaces for LLM agents: output shaping, description compression, and why the cheapest token is the one never emitted.",
+  "datePublished": "2026-06-02",
+  "dateModified": "2026-06-02",
+  "url": "https://zyads.github.io/posts/context-is-a-budget.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zyads.github.io/posts/context-is-a-budget.html"
+  },
+  "image": "https://zyads.github.io/og-image.png",
+  "author": {
+    "@type": "Person",
+    "name": "Zyad Shehadeh",
+    "url": "https://zyads.github.io/"
+  },
+  "isPartOf": {
+    "@type": "Blog",
+    "@id": "https://zyads.github.io/blog.html",
+    "name": "Zyad Shehadeh — Writing"
+  }
+}
+</script>
+<style>
+  :root {
+    --bg: #05070d;
+    --bg-2: #0a0e18;
+    --card: #0b101cd9;
+    --text: #e9edf5;
+    --prose: #c3cadb;
+    --muted: #9aa3b8;
+    --faint: #5f6880;
+    --c1: #38e0ff;   /* cyan */
+    --c2: #8b8cf8;   /* indigo */
+    --c3: #f472d0;   /* magenta */
+    --line: rgba(148,163,184,0.14);
+    color-scheme: dark;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.72;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: rgba(56,224,255,0.28); color: #fff; }
+
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  a { color: var(--c1); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  a:focus-visible {
+    outline: 2px solid var(--c1);
+    outline-offset: 3px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+
+  /* ---------- ambient background (calmer than home — this is for reading) ---------- */
+  .aurora { position: fixed; inset: 0; z-index: -3; overflow: hidden; pointer-events: none; }
+  .aurora span {
+    position: absolute; width: 44vmax; height: 44vmax; border-radius: 50%;
+    filter: blur(90px); opacity: 0.10; will-change: transform;
+  }
+  .aurora .a1 { background: #0ea5e9; top: -20vmax; left: -12vmax; animation: drift1 30s ease-in-out infinite alternate; }
+  .aurora .a2 { background: #7c3aed; bottom: -22vmax; right: -14vmax; animation: drift2 36s ease-in-out infinite alternate; }
+  @keyframes drift1 { to { transform: translate(7vmax, 6vmax) scale(1.1); } }
+  @keyframes drift2 { to { transform: translate(-6vmax, -5vmax) scale(1.08); } }
+
+  .grain {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: 0.5;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="180" height="180" filter="url(%23n)" opacity="0.05"/></svg>');
+  }
+
+  /* ---------- nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.55rem clamp(1.25rem, 4vw, 3rem);
+    background: rgba(6,8,15,0.72);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .nav .logo {
+    font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .nav .logo:hover { text-decoration: none; }
+  .nav .logo b {
+    background: linear-gradient(120deg, var(--c1), var(--c3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nav ul { display: flex; gap: clamp(0.4rem, 2vw, 1.4rem); list-style: none; align-items: center; }
+  .nav ul a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.45rem;
+    color: var(--muted); font-size: 0.92rem;
+  }
+  .nav ul a:hover { color: var(--c1); text-decoration: none; }
+  @media (max-width: 520px) {
+    .nav .logo-tail { display: none; }
+    .nav ul a { font-size: 0.88rem; padding: 0 0.3rem; }
+  }
+  .nav ul a[aria-current="page"] { color: var(--text); }
+
+  /* ---------- article layout ---------- */
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2.25rem); }
+  main { padding: clamp(2.6rem, 7vw, 5rem) 0 clamp(3.5rem, 8vw, 6rem); }
+
+  .crumb {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; letter-spacing: 0.06em; color: var(--faint);
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .crumb a { color: var(--faint); }
+  .crumb a:hover { color: var(--c1); text-decoration: none; }
+
+  article h1 {
+    margin-top: 0.4rem;
+    font-size: clamp(1.85rem, 5.5vw, 2.6rem);
+    font-weight: 800; letter-spacing: -0.025em; line-height: 1.14;
+    text-wrap: balance;
+  }
+  .rule {
+    height: 2px; width: 68px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--c1), var(--c3));
+    margin: 1.25rem 0 1.1rem;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 0.3rem 1.15rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; color: var(--faint); letter-spacing: 0.05em;
+  }
+  .meta .tag { color: var(--c2); }
+
+  /* ---------- prose ---------- */
+  .prose { margin-top: clamp(1.8rem, 4vw, 2.6rem); max-width: 70ch; }
+  .prose > * + * { margin-top: 1.15rem; }
+  .prose p { color: var(--prose); }
+  .prose strong { color: var(--text); font-weight: 650; }
+  .prose h2 {
+    margin-top: 2.7rem;
+    font-size: 1.42rem; font-weight: 750; letter-spacing: -0.015em; color: var(--text);
+  }
+  .prose h3 { margin-top: 2.1rem; font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .prose ul, .prose ol {
+    padding-left: 1.3rem; color: var(--prose);
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .prose li::marker { color: var(--c2); }
+  .prose blockquote {
+    border-left: 2px solid var(--c2);
+    padding: 0.15rem 0 0.15rem 1.1rem;
+    color: var(--muted); font-style: italic;
+  }
+  .prose hr { border: 0; height: 1px; background: var(--line); margin: 2.4rem 0; }
+
+  .prose code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em; color: var(--c1);
+    background: rgba(56,224,255,0.08);
+    border: 1px solid rgba(56,224,255,0.16);
+    padding: 0.1em 0.4em; border-radius: 6px;
+    overflow-wrap: break-word;
+  }
+  .prose pre {
+    margin-top: 1.35rem;
+    background: #070b14; border: 1px solid var(--line); border-radius: 12px;
+    padding: 1rem 1.15rem; overflow-x: auto;
+  }
+  .prose pre code {
+    background: none; border: 0; padding: 0;
+    color: #cfe8f5; font-size: 0.84rem; line-height: 1.65;
+  }
+  /* hand-rolled highlighting */
+  .kw  { color: var(--c3); }                       /* keyword */
+  .fn  { color: var(--c1); }                       /* function / flag */
+  .st  { color: var(--c2); }                       /* string */
+  .num { color: var(--c1); }                       /* number */
+  .cm  { color: var(--faint); font-style: italic; }/* comment */
+
+  .aside {
+    border: 1px solid var(--line); border-radius: 12px;
+    background: var(--card);
+    padding: 1rem 1.2rem;
+    color: var(--muted); font-size: 0.95rem;
+  }
+  .aside b { color: var(--text); }
+
+  /* ---------- prev / next ---------- */
+  .pagenav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    margin-top: clamp(3rem, 7vw, 4.2rem);
+  }
+  @media (max-width: 560px) { .pagenav { grid-template-columns: 1fr; } }
+  .pagenav a {
+    border: 1px solid var(--line); border-radius: 14px;
+    background: var(--card);
+    padding: 1rem 1.2rem; min-height: 44px;
+    display: flex; flex-direction: column; gap: 0.25rem;
+    color: var(--text);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .pagenav a:hover {
+    text-decoration: none;
+    border-color: rgba(56,224,255,0.4);
+    box-shadow: 0 14px 40px -20px rgba(56,224,255,0.22);
+  }
+  .pagenav .lbl {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint);
+  }
+  .pagenav .t { font-weight: 650; font-size: 0.97rem; letter-spacing: -0.01em; }
+  .pagenav .next { text-align: right; align-items: flex-end; grid-column: 2; }
+  @media (max-width: 560px) { .pagenav .next { grid-column: auto; } }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 2.6rem 0 3.4rem; }
+  footer .fwrap {
+    max-width: 68rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 3rem);
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem;
+    font-size: 0.88rem; color: var(--faint);
+  }
+  footer nav { display: flex; gap: 1.5rem; }
+  footer a { color: var(--muted); display: inline-flex; align-items: center; min-height: 44px; }
+  footer a:hover { color: var(--c1); }
+
+  /* ---------- motion safety ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001s !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!--
+  HOW TO ADD THE NEXT POST (no build step — everything is by hand):
+  1. Copy this file to posts/<new-slug>.html
+  2. Update: <title>, meta description, canonical + og:url (+ og:title/twitter),
+     the JSON-LD block (headline, datePublished, description, url, mainEntityOfPage),
+     the <h1>, the <time datetime="YYYY-MM-DD"> + human date, reading time, tag,
+     and the article body inside <div class="prose">.
+  3. Update the prev/next .pagenav links here and in the neighbouring post.
+  4. Add the post to blog.html (copy a card in the list, newest first)
+     and add a <url> entry to sitemap.xml.
+-->
+
+<div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="logo" href="/" aria-label="Zyad Shehadeh — home"><b>zyad</b><span class="logo-tail">@shehadeh</span><span style="color:var(--faint)">:~$</span></a>
+  <nav aria-label="Site">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/blog.html">Writing</a></li>
+      <li><a href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <div class="wrap">
+    <article>
+      <p class="crumb"><a href="/blog.html">&larr; all posts</a></p>
+      <h1>Context Is a Budget, Not a Bucket</h1>
+      <div class="rule" aria-hidden="true"></div>
+      <p class="meta">
+        <time datetime="2026-06-02">June 2, 2026</time>
+        <span>4 min read</span>
+        <span class="tag">#llm-tooling</span>
+      </p>
+
+      <div class="prose">
+<p>The cheapest token is the one never emitted. Every other optimization in LLM agent tooling &mdash; caching, batching, model routing &mdash; is fighting over cents, while tool outputs quietly dump thousands of tokens of noise into a context window that is the model's entire working memory. Context is not a bucket you fill; it's a budget you spend, and every tool you give an agent is a program that spends it on the model's behalf, usually badly.</p>
+
+<p>I learned this building agent tooling for my own projects &mdash; a local agent with file search, shell, and a knowledge base behind MCP servers. The first version had beautifully "complete" tools: search returned every match with full lines, the shell returned entire outputs, list operations returned everything. The agent got <em>stupider as sessions went on</em>, in a very characteristic way: it re-read things it had already seen, lost track of its own plan, and started pattern-matching on irrelevant text that happened to be sitting in context. Nothing was wrong with the model. I was strip-mining its working memory.</p>
+
+<h2>Two costs, one of them invisible</h2>
+
+<p>A wasted token costs you twice. The visible cost is dollars and latency &mdash; linear, boring, survivable. The invisible cost is attention: every irrelevant line in context is a distractor the model must implicitly decide to ignore on <em>every subsequent step</em>, and models are measurably worse at recall and reasoning as relevant signal gets diluted. A 5,000-token log dump doesn't just cost 5,000 tokens once; it taxes the quality of every decision made after it. That's why the budget framing matters: the question is never "can this fit," it's "what am I displacing."</p>
+
+<h2>Tools should answer questions, not dump state</h2>
+
+<p>The core design mistake is building agent tools like APIs for programs, which want completeness, instead of like reports for a colleague, who wants the answer. Compare two returns for the same search over a repo:</p>
+
+<pre><code><span class="cm"># version 1: "complete" — 2,000 matches, ~40k tokens, useless</span>
+src/a.py:12: from config import load
+src/a.py:97: cfg = load(path)
+&hellip; 1,998 more lines &hellip;
+
+<span class="cm"># version 2: shaped — ~200 tokens, actionable</span>
+2,014 matches in 143 files. By directory:
+  src/core/     812   src/api/  411   tests/  605   &hellip;
+Top files: src/core/config.py (94), src/core/init.py (61)
+Showing first 10 matches; refine query or pass dir= to drill down.</code></pre>
+
+<p>Version 2 costs 200&times; less and is <em>more</em> useful, because it answers the question the agent actually had ("where does this concentrate?") and hands it a lever for the follow-up. The design rules that consistently pay off:</p>
+
+<ul>
+<li><strong>Truncate with structure, not with scissors.</strong> Never chop at N bytes and append "&hellip;truncated". Return head + tail (errors live at the ends of logs), plus a count of what was omitted: <code>[1,847 lines omitted &mdash; 212 similar warnings, 3 distinct errors]</code>. The summary of the cut is worth more than another screen of the middle.</li>
+<li><strong>Deduplicate aggressively.</strong> A build log with the same warning 200 times should reach the model as one line with a count. Compilers repeat themselves; the context window shouldn't.</li>
+<li><strong>Return handles, not payloads.</strong> When output is genuinely large, write it somewhere and return an ID plus a summary: <code>saved to /tmp/log-3f2a (18k lines); errors at lines 1204, 9917</code>. The agent that needs the details can page in exactly the slice it wants. This is pointers versus values, rediscovered.</li>
+<li><strong>Make drill-down cheap and say it exists.</strong> Truncation without an escape hatch teaches the model that information is gone. The line "pass <code>offset=</code> to see more" is what converts a lossy tool into a lazy-loading one.</li>
+</ul>
+
+<h2>Descriptions are the tax you pay every single call</h2>
+
+<p>Tool outputs at least only spend budget when invoked. Tool <em>descriptions</em> are in context on every request, forever. Twenty tools with lovingly detailed 400-token descriptions is an 8,000-token standing charge before the conversation begins &mdash; and most of it is prose the model doesn't need, restating parameter names or explaining what "recursive" means. Write descriptions like man-page NAME lines, not man pages: one sentence of purpose, parameter constraints the schema can't express, one example only if the call shape is genuinely surprising. If a tool needs three paragraphs to describe, that's usually two tools wearing a trenchcoat &mdash; or a tool whose interface leaks its implementation.</p>
+
+<p>The same standing-charge logic applies to the roster itself. Every tool the agent will not use in this session is pure distractor. Registries that expose 50 tools "to be safe" are spending budget to <em>lower</em> the probability that the right tool gets picked &mdash; tool-selection accuracy degrades as the menu grows. Scope the toolset per task, or expose a search-then-load pattern where the model pulls in schemas on demand.</p>
+
+<h2>The test</h2>
+
+<p>My working heuristic now: <strong>read every tool result out loud to an imaginary colleague.</strong> If you'd be embarrassed to recite it &mdash; if you'd instinctively skip, summarize, or say "long story short" &mdash; the tool is making the model do that compression instead, at your expense, on every turn. The model can do that compression; it's remarkably good at it. But you're paying it to reason about your problem, not to be a garbage compactor. Spend the engineering hour once, in the tool, and the model spends its attention where you wanted it all along.</p>
+      </div>
+    </article>
+
+    <nav class="pagenav" aria-label="More posts">
+      <a href="/posts/signing-without-hermeticity-is-theater.html" rel="prev">
+        <span class="lbl">&larr; Older</span>
+        <span class="t">Signing Without Hermeticity Is Theater</span>
+      </a>
+    </nav>
+  </div>
+</main>
+
+<footer>
+  <div class="fwrap">
+    <span>Zyad Shehadeh &middot; Wilton, CT</span>
+    <nav aria-label="Profiles">
+      <a href="https://github.com/zyads" rel="me">GitHub</a>
+      <a href="https://linkedin.com/in/zyads" rel="me">LinkedIn</a>
+    </nav>
+    <span>Hand-built &mdash; vanilla HTML/CSS, zero scripts on this page, no trackers.</span>
+  </div>
+</footer>
+
+</body>
+</html>

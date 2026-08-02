@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Hermeticity, content addressing, and the small nondeterminisms — timestamps, absolute paths, env leakage — that silently destroy cache hit rates.">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Zyad Shehadeh">
+<link rel="canonical" href="https://zyads.github.io/posts/why-build-caches-miss.html">
+<meta property="og:title" content="Why Build Caches Miss">
+<meta property="og:description" content="Hermeticity, content addressing, and the small nondeterminisms — timestamps, absolute paths, env leakage — that silently destroy cache hit rates.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zyads.github.io/posts/why-build-caches-miss.html">
+<meta property="og:image" content="https://zyads.github.io/og-image.png">
+<meta property="og:site_name" content="Zyad Shehadeh">
+<meta property="article:published_time" content="2025-11-08">
+<meta property="article:author" content="https://zyads.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Why Build Caches Miss">
+<meta name="twitter:description" content="Hermeticity, content addressing, and the small nondeterminisms — timestamps, absolute paths, env leakage — that silently destroy cache hit rates.">
+<meta name="twitter:image" content="https://zyads.github.io/og-image.png">
+<title>Why Build Caches Miss &mdash; Zyad Shehadeh</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2306080f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%2338e0ff' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Why Build Caches Miss",
+  "description": "Hermeticity, content addressing, and the small nondeterminisms — timestamps, absolute paths, env leakage — that silently destroy cache hit rates.",
+  "datePublished": "2025-11-08",
+  "dateModified": "2025-11-08",
+  "url": "https://zyads.github.io/posts/why-build-caches-miss.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zyads.github.io/posts/why-build-caches-miss.html"
+  },
+  "image": "https://zyads.github.io/og-image.png",
+  "author": {
+    "@type": "Person",
+    "name": "Zyad Shehadeh",
+    "url": "https://zyads.github.io/"
+  },
+  "isPartOf": {
+    "@type": "Blog",
+    "@id": "https://zyads.github.io/blog.html",
+    "name": "Zyad Shehadeh — Writing"
+  }
+}
+</script>
+<style>
+  :root {
+    --bg: #05070d;
+    --bg-2: #0a0e18;
+    --card: #0b101cd9;
+    --text: #e9edf5;
+    --prose: #c3cadb;
+    --muted: #9aa3b8;
+    --faint: #5f6880;
+    --c1: #38e0ff;   /* cyan */
+    --c2: #8b8cf8;   /* indigo */
+    --c3: #f472d0;   /* magenta */
+    --line: rgba(148,163,184,0.14);
+    color-scheme: dark;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.72;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: rgba(56,224,255,0.28); color: #fff; }
+
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  a { color: var(--c1); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  a:focus-visible {
+    outline: 2px solid var(--c1);
+    outline-offset: 3px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+
+  /* ---------- ambient background (calmer than home — this is for reading) ---------- */
+  .aurora { position: fixed; inset: 0; z-index: -3; overflow: hidden; pointer-events: none; }
+  .aurora span {
+    position: absolute; width: 44vmax; height: 44vmax; border-radius: 50%;
+    filter: blur(90px); opacity: 0.10; will-change: transform;
+  }
+  .aurora .a1 { background: #0ea5e9; top: -20vmax; left: -12vmax; animation: drift1 30s ease-in-out infinite alternate; }
+  .aurora .a2 { background: #7c3aed; bottom: -22vmax; right: -14vmax; animation: drift2 36s ease-in-out infinite alternate; }
+  @keyframes drift1 { to { transform: translate(7vmax, 6vmax) scale(1.1); } }
+  @keyframes drift2 { to { transform: translate(-6vmax, -5vmax) scale(1.08); } }
+
+  .grain {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: 0.5;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="180" height="180" filter="url(%23n)" opacity="0.05"/></svg>');
+  }
+
+  /* ---------- nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.55rem clamp(1.25rem, 4vw, 3rem);
+    background: rgba(6,8,15,0.72);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .nav .logo {
+    font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .nav .logo:hover { text-decoration: none; }
+  .nav .logo b {
+    background: linear-gradient(120deg, var(--c1), var(--c3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nav ul { display: flex; gap: clamp(0.4rem, 2vw, 1.4rem); list-style: none; align-items: center; }
+  .nav ul a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.45rem;
+    color: var(--muted); font-size: 0.92rem;
+  }
+  .nav ul a:hover { color: var(--c1); text-decoration: none; }
+  @media (max-width: 520px) {
+    .nav .logo-tail { display: none; }
+    .nav ul a { font-size: 0.88rem; padding: 0 0.3rem; }
+  }
+  .nav ul a[aria-current="page"] { color: var(--text); }
+
+  /* ---------- article layout ---------- */
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2.25rem); }
+  main { padding: clamp(2.6rem, 7vw, 5rem) 0 clamp(3.5rem, 8vw, 6rem); }
+
+  .crumb {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; letter-spacing: 0.06em; color: var(--faint);
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .crumb a { color: var(--faint); }
+  .crumb a:hover { color: var(--c1); text-decoration: none; }
+
+  article h1 {
+    margin-top: 0.4rem;
+    font-size: clamp(1.85rem, 5.5vw, 2.6rem);
+    font-weight: 800; letter-spacing: -0.025em; line-height: 1.14;
+    text-wrap: balance;
+  }
+  .rule {
+    height: 2px; width: 68px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--c1), var(--c3));
+    margin: 1.25rem 0 1.1rem;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 0.3rem 1.15rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem; color: var(--faint); letter-spacing: 0.05em;
+  }
+  .meta .tag { color: var(--c2); }
+
+  /* ---------- prose ---------- */
+  .prose { margin-top: clamp(1.8rem, 4vw, 2.6rem); max-width: 70ch; }
+  .prose > * + * { margin-top: 1.15rem; }
+  .prose p { color: var(--prose); }
+  .prose strong { color: var(--text); font-weight: 650; }
+  .prose h2 {
+    margin-top: 2.7rem;
+    font-size: 1.42rem; font-weight: 750; letter-spacing: -0.015em; color: var(--text);
+  }
+  .prose h3 { margin-top: 2.1rem; font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .prose ul, .prose ol {
+    padding-left: 1.3rem; color: var(--prose);
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .prose li::marker { color: var(--c2); }
+  .prose blockquote {
+    border-left: 2px solid var(--c2);
+    padding: 0.15rem 0 0.15rem 1.1rem;
+    color: var(--muted); font-style: italic;
+  }
+  .prose hr { border: 0; height: 1px; background: var(--line); margin: 2.4rem 0; }
+
+  .prose code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em; color: var(--c1);
+    background: rgba(56,224,255,0.08);
+    border: 1px solid rgba(56,224,255,0.16);
+    padding: 0.1em 0.4em; border-radius: 6px;
+    overflow-wrap: break-word;
+  }
+  .prose pre {
+    margin-top: 1.35rem;
+    background: #070b14; border: 1px solid var(--line); border-radius: 12px;
+    padding: 1rem 1.15rem; overflow-x: auto;
+  }
+  .prose pre code {
+    background: none; border: 0; padding: 0;
+    color: #cfe8f5; font-size: 0.84rem; line-height: 1.65;
+  }
+  /* hand-rolled highlighting */
+  .kw  { color: var(--c3); }                       /* keyword */
+  .fn  { color: var(--c1); }                       /* function / flag */
+  .st  { color: var(--c2); }                       /* string */
+  .num { color: var(--c1); }                       /* number */
+  .cm  { color: var(--faint); font-style: italic; }/* comment */
+
+  .aside {
+    border: 1px solid var(--line); border-radius: 12px;
+    background: var(--card);
+    padding: 1rem 1.2rem;
+    color: var(--muted); font-size: 0.95rem;
+  }
+  .aside b { color: var(--text); }
+
+  /* ---------- prev / next ---------- */
+  .pagenav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    margin-top: clamp(3rem, 7vw, 4.2rem);
+  }
+  @media (max-width: 560px) { .pagenav { grid-template-columns: 1fr; } }
+  .pagenav a {
+    border: 1px solid var(--line); border-radius: 14px;
+    background: var(--card);
+    padding: 1rem 1.2rem; min-height: 44px;
+    display: flex; flex-direction: column; gap: 0.25rem;
+    color: var(--text);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .pagenav a:hover {
+    text-decoration: none;
+    border-color: rgba(56,224,255,0.4);
+    box-shadow: 0 14px 40px -20px rgba(56,224,255,0.22);
+  }
+  .pagenav .lbl {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint);
+  }
+  .pagenav .t { font-weight: 650; font-size: 0.97rem; letter-spacing: -0.01em; }
+  .pagenav .next { text-align: right; align-items: flex-end; grid-column: 2; }
+  @media (max-width: 560px) { .pagenav .next { grid-column: auto; } }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 2.6rem 0 3.4rem; }
+  footer .fwrap {
+    max-width: 68rem; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 3rem);
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem;
+    font-size: 0.88rem; color: var(--faint);
+  }
+  footer nav { display: flex; gap: 1.5rem; }
+  footer a { color: var(--muted); display: inline-flex; align-items: center; min-height: 44px; }
+  footer a:hover { color: var(--c1); }
+
+  /* ---------- motion safety ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001s !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="logo" href="/" aria-label="Zyad Shehadeh — home"><b>zyad</b><span class="logo-tail">@shehadeh</span><span style="color:var(--faint)">:~$</span></a>
+  <nav aria-label="Site">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/blog.html">Writing</a></li>
+      <li><a href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <div class="wrap">
+    <article>
+      <p class="crumb"><a href="/blog.html">&larr; all posts</a></p>
+      <h1>Why Build Caches Miss</h1>
+      <div class="rule" aria-hidden="true"></div>
+      <p class="meta">
+        <time datetime="2025-11-08">November 8, 2025</time>
+        <span>5 min read</span>
+        <span class="tag">#build-systems</span>
+      </p>
+
+      <div class="prose">
+<p>A build cache almost never misses because it's too small. It misses because you lied to it. Content-addressed caching is a very simple contract: the key is a hash of every input to an action, and the value is the output. If two machines compute different keys for what a human would call "the same build," the cache didn't fail &mdash; one of the inputs was something you didn't think of as an input. Every mysterious miss I have ever debugged, across CMake, Make, and Bazel projects, came down to that sentence.</p>
+
+<p>I learned this properly on a personal project: a C++ toolchain I built for a hobby renderer, with a shared remote cache between my desktop and laptop. Same repo, same commit, same compiler version &mdash; and a hit rate of roughly 40%. Here is the taxonomy of everything that turned out to be lying, because it's the same list you will find in any codebase.</p>
+
+<h2>The key is the whole environment, whether you like it or not</h2>
+
+<p>A cache key for a compile action is conceptually:</p>
+
+<pre><code>key = hash(
+  command line,
+  contents of every input file,
+  compiler binary,
+  environment the action can observe
+)</code></pre>
+
+<p>That last line is where builds die. If your build system passes the full environment through to actions &mdash; and plain Make and most hand-rolled CI scripts do &mdash; then <code>PATH</code>, <code>LANG</code>, <code>TZ</code>, <code>HOME</code>, and whatever your shell profile exports are all silently part of the key. Two agents with different <code>PATH</code> orderings produce different keys for identical work. Bazel's answer is <code>--incompatible_strict_action_env</code> and explicit <code>--action_env</code> allowlisting: actions see a fixed, minimal environment, and anything else must be declared. If your build tool can't do that, wrap actions in <code>env -i</code> with an explicit allowlist. It feels paranoid until you diff two "identical" CI runs and find the key differed because one runner had <code>LANG=en_US.UTF-8</code> and the other <code>LANG=C</code> &mdash; which changes <code>sort</code> order, which changes a generated header, which changes everything downstream.</p>
+
+<h2>The classic sins, in the order you'll find them</h2>
+
+<p><strong>Timestamps in outputs.</strong> <code>__DATE__</code> and <code>__TIME__</code> in C/C++ are the famous ones &mdash; every rebuild produces a byte-different object, so nothing downstream ever hits. GCC and Clang both warn with <code>-Wdate-time</code>, and both honor <code>SOURCE_DATE_EPOCH</code>, which pins them to a fixed instant:</p>
+
+<pre><code><span class="cm"># make "now" a function of the commit, not the wall clock</span>
+<span class="kw">export</span> SOURCE_DATE_EPOCH=<span class="fn">$(git log -1 --format=%ct)</span></code></pre>
+
+<p><strong>Absolute paths in debug info.</strong> Build the same file from <code>/home/you/src</code> and <code>/builds/agent-7/src</code> and the DWARF sections differ, so the objects differ, so the cache key of every consumer differs. The fix has been in compilers for years and almost nobody passes it:</p>
+
+<pre><code>-ffile-prefix-map=<span class="st">$PWD</span>=<span class="st">.</span>   <span class="cm"># covers __FILE__ and debug paths</span>
+-fdebug-prefix-map=<span class="st">$PWD</span>=<span class="st">.</span>  <span class="cm"># older compilers, debug info only</span></code></pre>
+
+<p>Bazel sidesteps the whole class by executing every action inside a sandbox at a stable, fake working directory. That's not sandboxing for security &mdash; it's sandboxing so the path <em>can't</em> leak into the artifact.</p>
+
+<p><strong>Archive nondeterminism.</strong> <code>tar</code> and <code>zip</code> happily embed mtimes, uids, and whatever order <code>readdir()</code> felt like returning today &mdash; which differs between ext4 and tmpfs, so your laptop and CI disagree forever. Deterministic archiving is one line once you know to write it:</p>
+
+<pre><code>tar <span class="fn">--sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner</span> \
+    -cf out.tar dir/</code></pre>
+
+<p><strong><code>ar</code> and linkers.</strong> Static archives embed timestamps unless you use deterministic mode (<code>ar rcD</code>, or a binutils built with <code>--enable-deterministic-archives</code>). Some linkers embed a build ID derived from the link time rather than the content. <code>ld --build-id=sha1</code> makes it a function of the bits instead.</p>
+
+<p><strong>Hash-map iteration order.</strong> Any code generator that walks a hash map and writes results to a file is a nondeterminism machine. Go randomizes map order on purpose; Python dicts are insertion-ordered but sets are not. The rule for anything that generates code, serializes config, or writes a manifest: <em>sort before you emit</em>. Always. It costs an <code>O(n log n)</code> you will never measure and buys you a cache that works.</p>
+
+<h2>Prove it, don't vibe it</h2>
+
+<p>The test for all of this is brutally simple: build twice, in two different directories, and compare the bits.</p>
+
+<pre><code><span class="cm"># the two-build test</span>
+git clone . /tmp/a &amp;&amp; git clone . /tmp/b
+(cd /tmp/a &amp;&amp; ./build.sh) &amp;&amp; (cd /tmp/b &amp;&amp; ./build.sh)
+diff &lt;(cd /tmp/a/out &amp;&amp; sha256sum *) \
+     &lt;(cd /tmp/b/out &amp;&amp; sha256sum *)</code></pre>
+
+<p>When hashes differ, <code>diffoscope</code> will tell you exactly which bytes and usually why &mdash; it understands ELF sections, archive members, and zip metadata, so "the .debug_str section contains /tmp/a" pops right out. On my renderer, four fixes &mdash; strict action env, prefix maps, <code>SOURCE_DATE_EPOCH</code>, and one sorted dict in a code generator &mdash; took the cross-machine hit rate from ~40% to 97%. The remaining 3% were genuine source changes.</p>
+
+<h2>Why this compounds</h2>
+
+<p>The vicious part of cache misses is that they propagate <em>forward</em>. One nondeterministic object file at the bottom of the graph re-keys every action above it: the archive that contains it, the binary that links it, the test that runs the binary, the image that packages it. A single <code>__TIME__</code> in a low-level utility library can, by itself, force a near-full rebuild of everything, every time &mdash; and the profile will just say "cache miss," not "cache miss because of one macro three layers down." That's why hit rate is a graph property, not a file property, and why fixing the lowest-level offenders first pays off disproportionately.</p>
+
+<p>Hermeticity has a reputation as build-system zealotry. It isn't. It's just the discipline of making the cache key honest &mdash; making the set of things that <em>can</em> affect the output equal to the set of things the build system <em>knows</em> affect the output. Once those two sets match, caching isn't a feature you tune. It's just what hashing does.</p>
+      </div>
+    </article>
+
+    <nav class="pagenav" aria-label="More posts">
+      <a href="/posts/storing-tree-relationships-in-a-table.html" rel="prev">
+        <span class="lbl">&larr; Older</span>
+        <span class="t">Storing Tree Relationships in a Table</span>
+      </a>
+      <a class="next" href="/posts/dependency-graph-is-the-real-artifact.html" rel="next">
+        <span class="lbl">Newer &rarr;</span>
+        <span class="t">The Dependency Graph Is the Real Artifact</span>
+      </a>
+    </nav>
+  </div>
+</main>
+
+<footer>
+  <div class="fwrap">
+    <span>Zyad Shehadeh &middot; Wilton, CT</span>
+    <nav aria-label="Profiles">
+      <a href="https://github.com/zyads" rel="me">GitHub</a>
+      <a href="https://linkedin.com/in/zyads" rel="me">LinkedIn</a>
+    </nav>
+    <span>Hand-built &mdash; vanilla HTML/CSS, zero scripts on this page, no trackers.</span>
+  </div>
+</footer>
+
+</body>
+</html>
