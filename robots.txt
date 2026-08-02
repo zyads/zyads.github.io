@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://zyads.github.io/sitemap.xml
+Sitemap: https://zyadshehadeh.dev/sitemap.xml
