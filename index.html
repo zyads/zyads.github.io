@@ -9,6 +9,19 @@
 <meta property="og:description" content="Software engineer working on developer platforms, build systems and applied AI tooling.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://zyads.github.io/">
+<meta property="og:site_name" content="Zyad Shehadeh">
+<meta property="og:image" content="https://zyads.github.io/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zyad Shehadeh — software engineer. Dark card with linked points of light.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Zyad Shehadeh">
+<meta name="twitter:description" content="Software engineer working on developer platforms, build systems and applied AI tooling.">
+<meta name="twitter:image" content="https://zyads.github.io/og-image.png">
+<meta name="theme-color" content="#05070d">
+<link rel="canonical" href="https://zyads.github.io/">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Zyad Shehadeh</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2306080f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%2338e0ff' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
 <script>document.documentElement.className += ' js';</script>
@@ -219,6 +232,19 @@
   }
   .btn .arrow { transition: transform 0.3s ease; display: inline-block; }
   .btn:hover .arrow { transform: translate(3px, -3px); }
+
+  .glance {
+    margin-top: 2.6rem;
+    display: flex; flex-wrap: wrap; gap: 0.55rem 2.2rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem; color: var(--muted);
+  }
+  .glance span { display: inline-flex; align-items: baseline; gap: 0.55rem; white-space: nowrap; }
+  .glance b {
+    color: var(--faint); font-weight: 600;
+    font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  @media (max-width: 560px) { .glance { gap: 0.5rem 1.4rem; font-size: 0.74rem; } .glance span { white-space: normal; } }
 
   .scroll-hint {
     position: absolute; bottom: 2rem; left: 50%; z-index: 2;
@@ -578,8 +604,7 @@
   }
   .wall-compose input::placeholder, .wall-compose textarea::placeholder { color: var(--faint); opacity: 0.65; }
   #wall-name { width: 11rem; }
-  #wall-answer { flex: 1; min-width: 10rem; }
-  #wall-msg { flex: 1 1 100%; min-width: 12rem; resize: none; line-height: 1.5; }
+  #wall-msg, #obs-msg { flex: 1 1 100%; min-width: 12rem; resize: none; line-height: 1.5; }
   .wall-btn {
     font: inherit; cursor: pointer;
     color: var(--c1);
@@ -594,6 +619,58 @@
   .wall-status { font-size: 0.78rem; min-height: 1.2em; margin: 0; }
   .wp-name { color: var(--c1); font-weight: 600; }
   .wp-msg { color: var(--text); }
+  .wp-pending { color: var(--faint); font-style: italic; }
+  .wp-id { color: var(--faint); font-size: 0.68rem; }
+  .wp-del {
+    font-family: inherit; font-size: 0.68rem; line-height: 1.3;
+    color: var(--c3); background: none; cursor: pointer;
+    border: 1px solid rgba(244,114,208,0.35); border-radius: 6px;
+    padding: 0 0.45rem; margin-left: 0.6rem;
+  }
+  .wp-del:hover { background: rgba(244,114,208,0.12); }
+
+  /* ---------- the observatory (the room behind the puzzle) ---------- */
+  .obs { margin-top: 1.5rem; border-color: rgba(139,140,248,0.28); }
+  .obs:focus-within, .obs:hover {
+    border-color: rgba(244,114,208,0.45);
+    box-shadow: 0 24px 70px -30px rgba(244,114,208,0.28);
+  }
+  .obs .term-bar { background: rgba(139,140,248,0.06); }
+  .obs .wp-name { color: var(--c3); }
+  .obs-locked { padding: 1.35rem 1.5rem 1.5rem; font-size: 0.84rem; color: var(--muted); }
+  .obs-locked p { max-width: 44rem; }
+  .obs-locked .riddle { color: var(--c2); font-style: italic; margin: 0.85rem 0; }
+  .obs-locked form { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+  .obs-locked label { color: var(--faint); white-space: nowrap; }
+  .obs-locked input {
+    flex: 1; min-width: 10rem;
+    background: rgba(148,163,184,0.06);
+    border: 1px solid var(--line); border-radius: 8px;
+    color: var(--text); font: inherit;
+    padding: 0.45rem 0.7rem; caret-color: var(--c3);
+  }
+  .obs-locked input:focus { outline: none; border-color: rgba(244,114,208,0.5); box-shadow: 0 0 16px rgba(244,114,208,0.12); }
+  .obs.granted { border-color: rgba(244,114,208,0.55); box-shadow: 0 0 44px -8px rgba(244,114,208,0.3); }
+  .obs-open { animation: obs-reveal 0.9s cubic-bezier(0.22,1,0.36,1); }
+  @keyframes obs-reveal { from { opacity: 0; transform: translateY(16px); } }
+  .obs-open .term-body { min-height: 180px; }
+
+  /* ---------- small screens: real phones ---------- */
+  @media (max-width: 700px) {
+    .term-input input, .wall-compose input, .wall-compose textarea, .obs-locked input {
+      font-size: 16px; /* iOS zooms focused inputs below 16px */
+    }
+  }
+  @media (pointer: coarse) {
+    .bar-btn { padding: 0.5rem 0.9rem; font-size: 0.74rem; }
+    .wall-btn { padding: 0.7rem 1.2rem; }
+    .term-input { padding-top: 0.85rem; padding-bottom: 0.85rem; }
+    .nav ul a { padding: 0.55rem 0.1rem; }
+    .term-input input, .wall-compose input, .wall-compose textarea, .obs-locked input {
+      font-size: 16px; /* touch devices in any orientation: stop iOS focus zoom */
+    }
+  }
+  @media (max-width: 560px) { .nav .logo .logo-tail { display: none; } }
 
   /* ---------- education ---------- */
   .edu {
@@ -654,15 +731,15 @@
 <div class="progress" id="progress" aria-hidden="true"></div>
 
 <header class="nav" id="nav">
-  <a class="logo" href="#top" aria-label="Zyad Shehadeh — home"><b>zyad</b>@shehadeh<span style="color:var(--faint)">:~$</span></a>
+  <a class="logo" href="#top" aria-label="Zyad Shehadeh — home"><b>zyad</b><span class="logo-tail">@shehadeh</span><span style="color:var(--faint)">:~$</span></a>
   <nav aria-label="Site">
     <ul>
       <li><a href="#about">About</a></li>
-      <li><a href="#projects">Projects</a></li>
       <li><a href="#experience">Experience</a></li>
-      <li><a href="#live">Live</a></li>
-      <li><a href="#wall">Wall</a></li>
+      <li class="hide-s"><a href="#projects">Projects</a></li>
       <li class="hide-s"><a href="#writing">Writing</a></li>
+      <li class="hide-s"><a href="#live">Terminal</a></li>
+      <li><a href="#wall">Wall</a></li>
       <li class="hide-s"><a class="ext" href="https://github.com/zyads" rel="me">GitHub&nbsp;&#8599;</a></li>
     </ul>
   </nav>
@@ -679,6 +756,12 @@
       <div class="cta">
         <a class="btn primary magnetic" href="https://github.com/zyads" rel="me">GitHub <span class="arrow" aria-hidden="true">&#8599;</span></a>
         <a class="btn magnetic" href="https://linkedin.com/in/zyads" rel="me">LinkedIn <span class="arrow" aria-hidden="true">&#8599;</span></a>
+      </div>
+      <div class="glance" aria-label="At a glance">
+        <span><b>now</b> Software Engineer III &middot; ASML</span>
+        <span><b>edu</b> B.S. CS &middot; Univ. of Michigan</span>
+        <span><b>stack</b> Python &middot; C++ &middot; Go &middot; Bazel &middot; K8s &middot; MCP</span>
+        <span><b>reach</b> GitHub / LinkedIn &uarr;</span>
       </div>
     </div>
     <div class="scroll-hint" aria-hidden="true">scroll</div>
@@ -702,47 +785,9 @@
     </div>
   </section>
 
-  <section id="projects" aria-labelledby="projects-h">
-    <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">02</span><h2 id="projects-h">Selected Projects</h2></div>
-      <div class="cards">
-        <article class="card tilt reveal" style="--d:0.05s">
-          <h3>Aether <span class="badge">private &middot; in dev</span></h3>
-          <p>A local-first, agent-native OS layer: freeze and resume desktop sessions, grounded local-model answers, every effect behind capability tokens and human approval. Nothing leaves the machine.</p>
-          <div class="tags"><span>agents</span><span>local-first</span><span>security</span><span>MCP</span></div>
-        </article>
-        <article class="card tilt reveal" style="--d:0.14s">
-          <h3><a href="https://github.com/zyads/heddle">Heddle</a></h3>
-          <p>Version control for many hands moving at once &mdash; intent leases, stitches, and a green-by-construction fabric above git, built for teams of humans and agents committing in parallel.</p>
-          <div class="tags"><span>git</span><span>devtools</span><span>concurrency</span></div>
-          <div class="gh-live" data-repo="zyads/heddle" aria-label="Live repository stats"></div>
-          <a class="go" href="https://github.com/zyads/heddle">View on GitHub <span class="arrow" aria-hidden="true">&#8599;</span></a>
-        </article>
-        <article class="card tilt reveal" style="--d:0.23s">
-          <h3><a href="https://github.com/zyads/arbor">Arbor</a></h3>
-          <p>Research code testing whether dendritic depth can substitute for transformer depth &mdash; shallow networks of deep neurons, benchmarked against conventional architectures.</p>
-          <div class="tags"><span>ML research</span><span>PyTorch</span><span>architectures</span></div>
-          <div class="gh-live" data-repo="zyads/arbor" aria-label="Live repository stats"></div>
-          <a class="go" href="https://github.com/zyads/arbor">View on GitHub <span class="arrow" aria-hidden="true">&#8599;</span></a>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <div class="marquee-band" aria-hidden="true">
-    <div class="marquee">
-      <div class="track"><b>Python</b><i>&#9670;</i><b>C++</b><i>&#9670;</i><b>Go</b><i>&#9670;</i><b>Bazel</b><i>&#9670;</i><b>Docker</b><i>&#9670;</i><b>Kubernetes</b><i>&#9670;</i><b>GitHub Actions</b><i>&#9670;</i><b>Azure</b><i>&#9670;</i></div>
-      <div class="track"><b>Python</b><i>&#9670;</i><b>C++</b><i>&#9670;</i><b>Go</b><i>&#9670;</i><b>Bazel</b><i>&#9670;</i><b>Docker</b><i>&#9670;</i><b>Kubernetes</b><i>&#9670;</i><b>GitHub Actions</b><i>&#9670;</i><b>Azure</b><i>&#9670;</i></div>
-    </div>
-    <div class="marquee rev">
-      <div class="track"><b>MCP</b><i>&#9670;</i><b>Agent Orchestration</b><i>&#9670;</i><b>RAG</b><i>&#9670;</i><b>LLM Tooling</b><i>&#9670;</i><b>CI/CD</b><i>&#9670;</i><b>Artifact Provenance</b><i>&#9670;</i><b>Distributed Systems</b><i>&#9670;</i><b>Observability</b><i>&#9670;</i></div>
-      <div class="track"><b>MCP</b><i>&#9670;</i><b>Agent Orchestration</b><i>&#9670;</i><b>RAG</b><i>&#9670;</i><b>LLM Tooling</b><i>&#9670;</i><b>CI/CD</b><i>&#9670;</i><b>Artifact Provenance</b><i>&#9670;</i><b>Distributed Systems</b><i>&#9670;</i><b>Observability</b><i>&#9670;</i></div>
-    </div>
-  </div>
-
   <section id="experience" aria-labelledby="experience-h">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">03</span><h2 id="experience-h">Experience</h2></div>
+      <div class="sec-head reveal"><span class="idx">02</span><h2 id="experience-h">Experience</h2></div>
       <div class="timeline" id="timeline">
         <article class="entry reveal">
           <div class="head"><h3><span class="co">ASML</span> &mdash; Software Engineer III</h3><span class="when">2024 &mdash; present</span></div>
@@ -772,61 +817,60 @@
     </div>
   </section>
 
-  <section id="live" aria-labelledby="live-h">
+  <div class="marquee-band" aria-hidden="true">
+    <div class="marquee">
+      <div class="track"><b>Python</b><i>&#9670;</i><b>C++</b><i>&#9670;</i><b>Go</b><i>&#9670;</i><b>Bazel</b><i>&#9670;</i><b>Docker</b><i>&#9670;</i><b>Kubernetes</b><i>&#9670;</i><b>GitHub Actions</b><i>&#9670;</i><b>Azure</b><i>&#9670;</i></div>
+      <div class="track"><b>Python</b><i>&#9670;</i><b>C++</b><i>&#9670;</i><b>Go</b><i>&#9670;</i><b>Bazel</b><i>&#9670;</i><b>Docker</b><i>&#9670;</i><b>Kubernetes</b><i>&#9670;</i><b>GitHub Actions</b><i>&#9670;</i><b>Azure</b><i>&#9670;</i></div>
+    </div>
+    <div class="marquee rev">
+      <div class="track"><b>MCP</b><i>&#9670;</i><b>Agent Orchestration</b><i>&#9670;</i><b>RAG</b><i>&#9670;</i><b>LLM Tooling</b><i>&#9670;</i><b>CI/CD</b><i>&#9670;</i><b>Artifact Provenance</b><i>&#9670;</i><b>Distributed Systems</b><i>&#9670;</i><b>Observability</b><i>&#9670;</i></div>
+      <div class="track"><b>MCP</b><i>&#9670;</i><b>Agent Orchestration</b><i>&#9670;</i><b>RAG</b><i>&#9670;</i><b>LLM Tooling</b><i>&#9670;</i><b>CI/CD</b><i>&#9670;</i><b>Artifact Provenance</b><i>&#9670;</i><b>Distributed Systems</b><i>&#9670;</i><b>Observability</b><i>&#9670;</i></div>
+    </div>
+  </div>
+
+  <section id="projects" aria-labelledby="projects-h">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">04</span><h2 id="live-h">Live from GitHub</h2></div>
-      <p class="term-note reveal"><span class="prompt">$</span> This terminal is real. When it scrolls into view, your browser calls the GitHub API directly &mdash; unauthenticated, read-only &mdash; and tails my public activity. The prompt at the bottom is a working shell: <span class="prompt">help</span> lists 30-odd commands &mdash; live GitHub lookups, a small filesystem, toys, a theme switcher&hellip; and a few things <span class="prompt">help</span> won't admit to.</p>
-      <div class="term reveal" id="term">
-        <div class="term-bar" aria-hidden="true">
-          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-          <span class="term-title mono">zyad@github:~ &mdash; tail -f events/public</span>
-        </div>
-        <div class="term-body mono" id="term-body" role="log" aria-label="Live GitHub activity feed"></div>
-        <form class="term-input mono" id="term-form">
-          <label for="term-cmd"><span class="p1">visitor</span>@web:~$</label>
-          <input id="term-cmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="120"
-                 placeholder="type help &middot; try: whois torvalds &middot; matrix &middot; neofetch" aria-label="Terminal command input. Type help and press Enter to list commands.">
-        </form>
+      <div class="sec-head reveal"><span class="idx">03</span><h2 id="projects-h">Selected Projects</h2></div>
+      <div class="cards">
+        <article class="card tilt reveal" style="--d:0.05s">
+          <h3>Aether <span class="badge">private &middot; in dev</span></h3>
+          <p>A local-first, agent-native OS layer: freeze and resume desktop sessions, grounded local-model answers, every effect behind capability tokens and human approval. Nothing leaves the machine.</p>
+          <div class="tags"><span>agents</span><span>local-first</span><span>security</span><span>MCP</span></div>
+        </article>
+        <article class="card tilt reveal" style="--d:0.14s">
+          <h3><a href="https://github.com/zyads/heddle">Heddle</a></h3>
+          <p>Version control for many hands moving at once &mdash; intent leases, stitches, and a green-by-construction fabric above git, built for teams of humans and agents committing in parallel.</p>
+          <div class="tags"><span>git</span><span>devtools</span><span>concurrency</span></div>
+          <div class="gh-live" data-repo="zyads/heddle" aria-label="Live repository stats"></div>
+          <a class="go" href="https://github.com/zyads/heddle">View on GitHub <span class="arrow" aria-hidden="true">&#8599;</span></a>
+        </article>
+        <article class="card tilt reveal" style="--d:0.23s">
+          <h3><a href="https://github.com/zyads/arbor">Arbor</a></h3>
+          <p>Research code testing whether dendritic depth can substitute for transformer depth &mdash; shallow networks of deep neurons, benchmarked against conventional architectures.</p>
+          <div class="tags"><span>ML research</span><span>PyTorch</span><span>architectures</span></div>
+          <div class="gh-live" data-repo="zyads/arbor" aria-label="Live repository stats"></div>
+          <a class="go" href="https://github.com/zyads/arbor">View on GitHub <span class="arrow" aria-hidden="true">&#8599;</span></a>
+        </article>
       </div>
     </div>
   </section>
 
-  <section id="wall" aria-labelledby="wall-h">
+  <section id="education" aria-labelledby="education-h">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">05</span><h2 id="wall-h">The Wall</h2></div>
-      <p class="term-note reveal"><span class="prompt">$</span> A public guestbook with a lock. Reading is free: the feed below comes straight from <span class="prompt">github.com/zyads/wall</span>. Writing costs a puzzle &mdash; the answer is hidden in this page, and solving it happens right here. Deliberately token-free: no credential ships with this page. Posts travel through a tiny relay that can only ring a bell at that one repo, where a robot moderates them onto the wall. You never leave this page to post.</p>
-      <div class="term reveal" id="wallbox">
-        <div class="term-bar">
-          <span class="dot r" aria-hidden="true"></span><span class="dot y" aria-hidden="true"></span><span class="dot g" aria-hidden="true"></span>
-          <span class="term-title mono">guest@wall:~ &mdash; cat wall/data.json</span>
-          <button class="bar-btn" id="wall-refresh" type="button" hidden>refresh</button>
+      <div class="sec-head reveal"><span class="idx">04</span><h2 id="education-h">Education</h2></div>
+      <div class="edu reveal">
+        <div>
+          <h3>University of Michigan</h3>
+          <p class="sub">B.S. Computer Science &middot; College of LSA Honors &middot; Ann Arbor, MI</p>
         </div>
-        <div class="term-body mono" id="wall-posts" role="log" aria-label="Wall posts">
-          <span class="row t-dim">The wall is read live from github.com/zyads/wall &mdash; enable JavaScript to see it here.</span>
-        </div>
-        <div class="wall-compose mono" id="wall-compose" hidden>
-          <form id="wall-lockform">
-            <label for="wall-answer">speak, friend:</label>
-            <input id="wall-answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" placeholder="one word unlocks the wall">
-            <button class="wall-btn" type="submit">unlock</button>
-          </form>
-          <form id="wall-form" hidden>
-            <input id="wall-name" type="text" autocomplete="off" maxlength="24" placeholder="name (optional)">
-            <textarea id="wall-msg" rows="2" maxlength="140" placeholder="leave something on the wall &mdash; 140 chars" aria-label="Wall message"></textarea>
-            <div class="wall-meta">
-              <button class="wall-btn" type="submit">post to the wall</button>
-              <span class="wall-count" id="wall-count">0/140</span>
-            </div>
-          </form>
-          <p class="wall-status t-dim" id="wall-status"></p>
-        </div>
+        <span class="when">2020 &mdash; 2023</span>
       </div>
     </div>
   </section>
 
   <section id="writing" aria-labelledby="writing-h">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">06</span><h2 id="writing-h">Writing</h2></div>
+      <div class="sec-head reveal"><span class="idx">05</span><h2 id="writing-h">Writing</h2></div>
 
       <!-- ADD A POST: copy this block, newest first. Nothing else to do — no build step.
       <details class="post reveal">
@@ -894,18 +938,86 @@
     </div>
   </section>
 
-  <section id="education" aria-labelledby="education-h" style="padding-top:0">
+  <section id="live" aria-labelledby="live-h">
     <div class="wrap">
-      <div class="sec-head reveal"><span class="idx">07</span><h2 id="education-h">Education</h2></div>
-      <div class="edu reveal">
-        <div>
-          <h3>University of Michigan</h3>
-          <p class="sub">B.S. Computer Science &middot; College of LSA Honors &middot; Ann Arbor, MI</p>
+      <div class="sec-head reveal"><span class="idx">06</span><h2 id="live-h">Live from GitHub</h2></div>
+      <p class="term-note reveal"><span class="prompt">$</span> This terminal is real. When it scrolls into view, your browser calls the GitHub API directly &mdash; unauthenticated, read-only &mdash; and tails my public activity. The prompt at the bottom is a working shell: <span class="prompt">help</span> lists 30-odd commands &mdash; live GitHub lookups, a small filesystem, toys, a theme switcher&hellip; and a few things <span class="prompt">help</span> won't admit to.</p>
+      <div class="term reveal" id="term">
+        <div class="term-bar" aria-hidden="true">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="term-title mono">zyad@github:~ &mdash; tail -f events/public</span>
         </div>
-        <span class="when">2020 &mdash; 2023</span>
+        <div class="term-body mono" id="term-body" role="log" aria-label="Live GitHub activity feed"></div>
+        <form class="term-input mono" id="term-form">
+          <label for="term-cmd"><span class="p1">visitor</span>@web:~$</label>
+          <input id="term-cmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="120"
+                 placeholder="type help &middot; try: whois torvalds &middot; matrix &middot; neofetch" aria-label="Terminal command input. Type help and press Enter to list commands.">
+        </form>
       </div>
     </div>
   </section>
+
+  <section id="wall" aria-labelledby="wall-h">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="idx">07</span><h2 id="wall-h">The Wall</h2></div>
+      <p class="term-note reveal"><span class="prompt">$</span> A public guestbook, open to everyone &mdash; no login, no puzzle. The feed reads straight from <span class="prompt">github.com/zyads/wall</span>, and your post travels through a tiny relay that can only ring a bell at that one repo, where a robot moderates it onto the wall. No credential ships with this page; you never leave it to post. And below the wall there is a second, quieter room &mdash; that one answers to a single word.</p>
+      <div class="term reveal" id="wallbox">
+        <div class="term-bar">
+          <span class="dot r" aria-hidden="true"></span><span class="dot y" aria-hidden="true"></span><span class="dot g" aria-hidden="true"></span>
+          <span class="term-title mono">guest@wall:~ &mdash; cat wall/data.json</span>
+          <button class="bar-btn" id="wall-refresh" type="button" hidden>refresh</button>
+        </div>
+        <div class="term-body mono" id="wall-posts" role="log" aria-label="Wall posts">
+          <span class="row t-dim">The wall is read live from github.com/zyads/wall &mdash; enable JavaScript to see it here.</span>
+        </div>
+        <div class="wall-compose mono" id="wall-compose" hidden>
+          <form id="wall-form">
+            <input id="wall-name" type="text" autocomplete="off" maxlength="24" placeholder="name (optional)" aria-label="Your name (optional)">
+            <textarea id="wall-msg" rows="2" maxlength="140" placeholder="leave something on the wall &mdash; 140 chars" aria-label="Wall message"></textarea>
+            <div class="wall-meta">
+              <button class="wall-btn" type="submit">post to the wall</button>
+              <span class="wall-count" id="wall-count">0/140</span>
+            </div>
+          </form>
+          <p class="wall-status t-dim" id="wall-status"></p>
+        </div>
+      </div>
+
+      <div class="term obs reveal" id="obsbox">
+        <div class="term-bar">
+          <span class="dot r" aria-hidden="true"></span><span class="dot y" aria-hidden="true"></span><span class="dot g" aria-hidden="true"></span>
+          <span class="term-title mono" id="obs-title">zyad@observatory:~ &mdash; locked</span>
+          <button class="bar-btn" id="obs-refresh" type="button" hidden>refresh</button>
+        </div>
+        <div class="obs-locked mono" id="obs-locked">
+          <p>Behind this door is <span style="color:var(--text)">the observatory</span> &mdash; a second room, for the ones who look up. It opens to a single word, and the word is written across the top of this page.</p>
+          <p class="riddle">&ldquo;scattered lights, joined by imagined lines,<br>named by the ancients &mdash; one word for such a picture.&rdquo;</p>
+          <p class="t-dim">stuck? the terminal one section up takes <span style="color:var(--c1)">hint</span> &mdash; it escalates the more you ask. (solving happens in your browser; the door itself is checked server-side.)</p>
+          <form id="obs-lockform">
+            <label for="obs-answer">speak, friend:</label>
+            <input id="obs-answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" placeholder="one word">
+            <button class="wall-btn" type="submit">unlock</button>
+          </form>
+          <p class="wall-status t-dim" id="obs-lockstatus"></p>
+        </div>
+        <div class="obs-open" id="obs-open" hidden>
+          <div class="term-body mono" id="obs-posts" role="log" aria-label="Observatory posts"></div>
+          <div class="wall-compose mono">
+            <form id="obs-form">
+              <input id="obs-name" type="text" autocomplete="off" maxlength="24" placeholder="name (optional)" aria-label="Your name (optional)">
+              <textarea id="obs-msg" rows="3" maxlength="280" placeholder="for solvers' eyes &mdash; 280 chars up here" aria-label="Observatory message"></textarea>
+              <div class="wall-meta">
+                <button class="wall-btn" type="submit">post to the observatory</button>
+                <span class="wall-count" id="obs-count">0/280</span>
+              </div>
+            </form>
+            <p class="wall-status t-dim" id="obs-status"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 
 </main>
 
@@ -916,7 +1028,7 @@
       <a href="https://github.com/zyads" rel="me">GitHub</a>
       <a href="https://linkedin.com/in/zyads" rel="me">LinkedIn</a>
     </nav>
-    <span>Hand-built &mdash; vanilla JS, no trackers. This page talks to api.github.com and the wall repo, read-only &mdash; writing to the wall takes a puzzle.</span>
+    <span>Hand-built &mdash; vanilla JS, no trackers. This page talks to api.github.com and the wall repo. The wall is open to everyone; one room upstairs takes a puzzle.</span>
   </div>
 </footer>
 
@@ -933,7 +1045,7 @@
   var fieldAPI = null; /* set by initField — lets the terminal poke the hero canvas */
 
   /* ============================================================
-     Particle constellation field (canvas, hand-rolled)
+     Particle star field (canvas, hand-rolled)
      ============================================================ */
   function initField() {
     var canvas = doc.getElementById('field');
@@ -952,8 +1064,8 @@
     var MR = 150, MR2 = MR * MR;
     var countOverride = 0;          /* terminal `particles <n>` */
     var flareUntil = 0;             /* unlock celebration */
-    var constPairs = null;          /* puzzle: particles pinned to a star map */
-    var constStart = 0, constUntil = 0;
+    var pinPairs = null;            /* puzzle: particles pinned to a star map */
+    var pinStart = 0, pinUntil = 0;
 
     function makeParticle() {
       return {
@@ -973,7 +1085,10 @@
       canvas.width = Math.max(1, Math.round(W * dpr));
       canvas.height = Math.max(1, Math.round(H * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var target = countOverride || Math.min(150, Math.max(45, Math.round((W * H) / 14000)));
+      var small = W < 700 || (navigator.deviceMemory && navigator.deviceMemory <= 2);
+      var target = countOverride || (small
+        ? Math.min(70, Math.max(26, Math.round((W * H) / 20000)))
+        : Math.min(150, Math.max(45, Math.round((W * H) / 14000))));
       while (parts.length < target) parts.push(makeParticle());
       parts.length = target;
       paintBase(1);
@@ -1018,11 +1133,11 @@
       }
 
       /* puzzle: pinned particles glide onto the star map */
-      if (constPairs) {
-        if (nowMs > constUntil) { constPairs = null; }
+      if (pinPairs) {
+        if (nowMs > pinUntil) { pinPairs = null; }
         else {
-          for (i = 0; i < constPairs.length; i++) {
-            var cp = constPairs[i];
+          for (i = 0; i < pinPairs.length; i++) {
+            var cp = pinPairs[i];
             cp.p.x += (cp.tx - cp.p.x) * 0.08;
             cp.p.y += (cp.ty - cp.p.y) * 0.08;
             cp.p.vx *= 0.7; cp.p.vy *= 0.7;
@@ -1073,21 +1188,21 @@
         ctx.fill();
       }
 
-      /* puzzle: trace the asterism while the pins hold */
-      if (constPairs) {
-        var fade = Math.min(1, (constUntil - nowMs) / 700, (nowMs - constStart) / 700);
+      /* puzzle: trace the figure while the pins hold */
+      if (pinPairs) {
+        var fade = Math.min(1, (pinUntil - nowMs) / 700, (nowMs - pinStart) / 700);
         if (fade > 0) {
           ctx.strokeStyle = 'rgba(56, 224, 255, ' + (0.6 * fade).toFixed(3) + ')';
           ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.moveTo(constPairs[0].p.x, constPairs[0].p.y);
-          for (i = 1; i < constPairs.length; i++) ctx.lineTo(constPairs[i].p.x, constPairs[i].p.y);
-          ctx.lineTo(constPairs[3].p.x, constPairs[3].p.y); /* close the bowl */
+          ctx.moveTo(pinPairs[0].p.x, pinPairs[0].p.y);
+          for (i = 1; i < pinPairs.length; i++) ctx.lineTo(pinPairs[i].p.x, pinPairs[i].p.y);
+          ctx.lineTo(pinPairs[3].p.x, pinPairs[3].p.y); /* close the bowl */
           ctx.stroke();
-          for (i = 0; i < constPairs.length; i++) {
+          for (i = 0; i < pinPairs.length; i++) {
             ctx.fillStyle = 'rgba(233, 237, 245, ' + (0.9 * fade).toFixed(3) + ')';
             ctx.beginPath();
-            ctx.arc(constPairs[i].p.x, constPairs[i].p.y, 2.6, 0, 6.2832);
+            ctx.arc(pinPairs[i].p.x, pinPairs[i].p.y, 2.6, 0, 6.2832);
             ctx.fill();
           }
         }
@@ -1159,13 +1274,13 @@
         schedule();
         return true;
       },
-      constellation: function () {
+      figure: function () {
         if (reduced || parts.length < 7) return false;
         /* Ursa Major, the Big Dipper — handle then bowl, normalized */
         var sky = [[0.02, 0.10], [0.14, 0.22], [0.26, 0.28], [0.38, 0.30],
                    [0.56, 0.22], [0.58, 0.42], [0.40, 0.46]];
         var used = {};
-        constPairs = [];
+        pinPairs = [];
         for (var s = 0; s < sky.length; s++) {
           var tx = W * (0.22 + sky[s][0] * 0.56);
           var ty = H * (0.14 + sky[s][1] * 0.62);
@@ -1177,17 +1292,17 @@
             if (d2 < bd) { bd = d2; best = i; }
           }
           used[best] = true;
-          constPairs.push({ p: parts[best], tx: tx, ty: ty });
+          pinPairs.push({ p: parts[best], tx: tx, ty: ty });
         }
-        constStart = Date.now();
-        constUntil = constStart + 5200;
+        pinStart = Date.now();
+        pinUntil = pinStart + 5200;
         schedule();
         return true;
       }
     };
 
     if (reduced) {
-      /* single static constellation, no animation */
+      /* single static frame, no animation */
       t = Math.random() * 100;
       paintBase(1);
       ctx.globalCompositeOperation = 'lighter';
@@ -1282,7 +1397,7 @@
         }
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
-    ['about', 'projects', 'experience', 'live', 'wall', 'writing'].forEach(function (id) {
+    ['about', 'experience', 'projects', 'education', 'writing', 'live', 'wall'].forEach(function (id) {
       var el = doc.getElementById(id);
       if (el) secIo.observe(el);
     });
@@ -1545,46 +1660,71 @@
   }
 
   /* ============================================================
-     The wall's lock. The answer is NOT in this file — only a
-     salted SHA-256 digest of it. Solve the page, not the source.
+     The observatory's lock. The answer is NOT in this file — only
+     a salted SHA-256 digest of it. Solve the page, not the source.
+     On solve, the browser derives a second digest (the room proof)
+     and the relay verifies THAT against a server-side secret, so
+     forging the UI state opens nothing.
      ============================================================ */
   var WALL_DIGEST = '4cf1faf31e82b7708af033f7ce301e8ac29c1e870370583711d084baeb156b48';
   var WALL_SALT = 'zw1';
+  var ROOM_SALT = 'zw2';
   var WALL_ENDPOINT = 'https://zyads-wall.zyshehadeh.workers.dev/'; /* write relay: origin-locked Worker holds the only credential */
   var WALL_RAW = 'https://raw.githubusercontent.com/zyads/wall/master/data.json';
+  var ROOM_RAW = 'https://raw.githubusercontent.com/zyads/wall/master/room.json';
   var wrongTries = 0;
   var SNARK = [
     'no. the sky does not answer to that.',
-    'still no. the terminal command `hint` is free, you know.',
+    'still no. the terminal one section up has a `hint` command, and it is free.',
     'wrong again. points of light, imagined lines, pictures with names.',
     'one word. thirteen letters. older than astronomy.',
-    'admirable persistence, terrible aim. go `trace` it in the terminal.'
+    'admirable persistence, terrible aim. type `trace` in the terminal.',
+    'final nudge: starts with c, ends with n — what the ancients called the pictures they drew between stars.'
   ];
   function snark() {
     var s = SNARK[Math.min(wrongTries, SNARK.length - 1)];
     wrongTries++;
     return s;
   }
-  function isUnlocked() {
-    try { return sessionStorage.getItem('wallKey') === 'granted'; } catch (e) { return false; }
-  }
-  /* -> Promise<true|false|null>; null = WebCrypto unavailable */
-  function checkAnswer(raw) {
-    var norm = String(raw || '').toLowerCase().trim().replace(/\s+/g, ' ');
-    if (!norm || !(window.crypto && window.crypto.subtle && window.TextEncoder)) {
-      return Promise.resolve(norm ? null : false);
-    }
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(norm + WALL_SALT)).then(function (buf) {
+  function sha256hex(s) {
+    if (!(window.crypto && window.crypto.subtle && window.TextEncoder)) return Promise.resolve(null);
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)).then(function (buf) {
       var b = new Uint8Array(buf), h = '', i;
       for (i = 0; i < b.length; i++) h += (b[i] < 16 ? '0' : '') + b[i].toString(16);
-      return h === WALL_DIGEST;
+      return h;
     }).catch(function () { return null; });
   }
-  var wallAPI = { setUnlocked: function () {}, refresh: function () {} };
-  function grantAccess() {
-    try { sessionStorage.setItem('wallKey', 'granted'); } catch (e) { /* fine */ }
+  function roomProof() {
+    try {
+      var p = sessionStorage.getItem('roomProof');
+      return (p && /^[0-9a-f]{64}$/.test(p)) ? p : '';
+    } catch (e) { return ''; }
+  }
+  function isUnlocked() { return !!roomProof(); }
+  function adminKey() {
+    try { return sessionStorage.getItem('wallAdminKey') || ''; } catch (e) { return ''; }
+  }
+  /* -> Promise<proofHex|false|null>; null = WebCrypto unavailable */
+  function checkAnswer(raw) {
+    var norm = String(raw || '').toLowerCase().trim().replace(/\s+/g, ' ');
+    if (!norm) return Promise.resolve(false);
+    return sha256hex(norm + WALL_SALT).then(function (h) {
+      if (h === null) return null;
+      if (h !== WALL_DIGEST) return false;
+      return sha256hex(norm + ROOM_SALT);
+    });
+  }
+  var wallAPI = {
+    openRoom: function () {},
+    refresh: function () {},
+    adminChanged: function () {},
+    list: null,     /* set by initWall: (board) -> Promise<posts> */
+    sendAdmin: null /* set by initWall: (action, board, id, fields) -> Promise */
+  };
+  function grantAccess(proof) {
+    try { sessionStorage.setItem('roomProof', proof); } catch (e) { /* fine */ }
     if (fieldAPI) fieldAPI.flare();
-    wallAPI.setUnlocked(true);
+    wallAPI.openRoom(true);
   }
 
   /* ============================================================
@@ -1860,7 +2000,7 @@
           '   range queries; every structural change renumbers.',
           ' ',
           'verdict: choose by depth, dominant queries, and how much',
-          'update complexity you can stomach. full post: §06 Writing.'
+          'update complexity you can stomach. full post: §05 Writing.'
         ]
       }
     };
@@ -2102,7 +2242,7 @@
       if (r.node === undefined) { out('cat: no such file: ' + args[0], 't-err'); return; }
       if (isDir(r.node)) { out('cat: is a directory: ' + args[0], 't-err'); return; }
       outArt(r.node, '');
-      if (r.segs[r.segs.length - 1] === '.night_sky' && fieldAPI && fieldAPI.constellation()) {
+      if (r.segs[r.segs.length - 1] === '.night_sky' && fieldAPI && fieldAPI.figure()) {
         out(' ', '', 0);
         out('(look up — the header is drawing it for you right now)', 't-ok');
       }
@@ -2272,15 +2412,16 @@
         ['this shell answers to more than `help` admits.', 'the curious leave a trace.'],
         ['look up: the top of this page draws the night sky,', 'joining scattered points with imagined lines.', 'such drawings have an old, old name.'],
         ['there is a dotfile in ~ that plain `ls` will not show you.', '`ls -a` has no such manners.'],
-        ['when you know the word:  unlock <word>']
+        ['when you know the word:  unlock <word>'],
+        ['alright: thirteen letters, starts with c, ends with n.', 'the ancients named the pictures they drew between stars.', 'say it:  unlock <word>']
       ];
       var h = hints[Math.min(hintIdx++, hints.length - 1)];
       for (var i = 0; i < h.length; i++) out(h[i], i === 0 ? 't-cmd' : 't-dim', 30);
     });
     reg('system', 'wall', 'wall', 'about the guestbook below', function () {
-      out('the wall lives just below this terminal — §05.', '', 40);
-      if (isUnlocked()) out('you already hold the key. go write something.', 't-ok');
-      else out('reading is free; posting is locked behind a riddle. `hint` starts the trail.', 't-dim');
+      out('the wall lives just below this terminal — §07. it is public: read it, write on it, no key needed.', '', 40);
+      if (isUnlocked()) out('and you hold the observatory key — the room beneath the wall is open to you.', 't-ok');
+      else out('beneath it sits the observatory, which opens to one word. `hint` starts the trail.', 't-dim');
     });
     reg('system', 'neofetch', 'neofetch', 'this machine, aesthetically', function () {
       var ua = navigator.userAgent || '';
@@ -2411,7 +2552,7 @@
     }, true);
     reg('hidden', 'trace', 'trace', 'follow the signal', function () {
       out('tracing signal path ...', 't-dim', 240);
-      var drawn = fieldAPI && fieldAPI.constellation();
+      var drawn = fieldAPI && fieldAPI.figure();
       if (drawn) {
         out('signal found: 7 points, 6 edges — being drawn into the header field right now.', 't-ok', 200);
         out('look up. the field remembers what it draws.', '', 200);
@@ -2424,20 +2565,77 @@
       out(' ', '', 60);
       out('speak it here:  unlock <word>', 't-dim');
     }, true);
-    reg('hidden', 'unlock', 'unlock <word>', 'open the wall', function (args) {
+    reg('hidden', 'unlock', 'unlock <word>', 'open the observatory', function (args) {
       var guess = args.join(' ');
       if (!guess) { out('usage: unlock <word>', 't-err'); return; }
-      if (isUnlocked()) { out('already unlocked — the wall in §05 awaits.', 't-ok'); return; }
-      checkAnswer(guess).then(function (ok) {
-        if (ok === null) { out('cannot verify here — this browser lacks WebCrypto.', 't-err'); return; }
-        if (!ok) { out(snark(), 't-err'); return; }
+      if (isUnlocked()) { out('already unlocked — the observatory under §07 The Wall awaits.', 't-ok'); return; }
+      checkAnswer(guess).then(function (proof) {
+        if (proof === null) { out('cannot verify here — this browser lacks WebCrypto.', 't-err'); return; }
+        if (!proof) { out(snark(), 't-err'); return; }
         out(' ', '', 40);
-        out('┌────────────────────────────────────┐', 't-grant', 60, true);
-        out('│   ACCESS GRANTED — WALL UNLOCKED   │', 't-grant', 60, true);
-        out('└────────────────────────────────────┘', 't-grant', 60, true);
-        out('the composer in §05 The Wall is open. be kind — a robot moderates.', 't-ok', 60);
-        grantAccess();
+        out('┌──────────────────────────────────────────┐', 't-grant', 60, true);
+        out('│   ACCESS GRANTED — THE OBSERVATORY OPENS │', 't-grant', 60, true);
+        out('└──────────────────────────────────────────┘', 't-grant', 60, true);
+        out('a second room just appeared beneath the wall in §07. 280 chars up there, solvers only.', 't-ok', 60);
+        grantAccess(proof);
       });
+    }, true);
+    reg('hidden', 'admin', 'admin <key|off>', 'owner moderation key (session only)', function (args, raw) {
+      if (!args.length) { out('usage: admin <key>  ·  admin off', 't-err'); return; }
+      if (args[0] === 'off') {
+        try { sessionStorage.removeItem('wallAdminKey'); } catch (e) { /* fine */ }
+        wallAPI.adminChanged();
+        out('admin key cleared for this session.', 't-dim');
+        return;
+      }
+      var key = raw.slice(6).trim();
+      try { sessionStorage.setItem('wallAdminKey', key); } catch (e) { out('sessionStorage unavailable — cannot hold the key.', 't-err'); return; }
+      wallAPI.adminChanged();
+      out('admin key held for this session (verified server-side on first use).', 't-ok', 40);
+      out('mod ls <wall|room>          list posts with ids', 't-dim', 0, true);
+      out('mod rm <wall|room> <id>     delete a post', 't-dim', 0, true);
+      out('mod edit <wall|room> <id> <new text>', 't-dim', 0, true);
+      out('the wall and observatory below also grow ✕ buttons while the key is held.', 't-dim', 0, true);
+    }, true);
+    reg('hidden', 'mod', 'mod <ls|rm|edit> <board> ...', 'owner moderation', function (args, raw) {
+      if (!adminKey()) { out('no admin key held — `admin <key>` first.', 't-err'); return; }
+      var sub = (args[0] || '').toLowerCase();
+      var board = (args[1] || '').toLowerCase();
+      if (board !== 'wall' && board !== 'room') { out('usage: mod <ls|rm|edit> <wall|room> ...', 't-err'); return; }
+      if (sub === 'ls') {
+        if (!wallAPI.list) { out('wall not initialized.', 't-err'); return; }
+        out('fetching ' + board + ' ...', 't-dim', 60);
+        wallAPI.list(board).then(function (posts) {
+          if (!posts.length) { out('(empty)', 't-dim'); return; }
+          for (var i = Math.max(0, posts.length - 20); i < posts.length; i++) {
+            var p = posts[i];
+            var msg = String(p.message || '').replace(/\s+/g, ' ');
+            if (msg.length > 46) msg = msg.slice(0, 45) + '…';
+            println([{ t: pad(String(p.id || '????????'), 9), c: 't-repo' },
+                     { t: pad(String(p.name || 'anonymous').slice(0, 14), 15), c: 't-cmd' },
+                     { t: msg, c: '' }], 30, true);
+          }
+        }).catch(function () { out('could not fetch ' + board + '.', 't-err'); });
+        return;
+      }
+      if (sub === 'rm' || sub === 'edit') {
+        var id = (args[2] || '').toLowerCase();
+        if (!/^[0-9a-f]{4,16}$/.test(id)) { out('usage: mod ' + sub + ' <wall|room> <id> — ids come from `mod ls ' + board + '`', 't-err'); return; }
+        var fields = {};
+        if (sub === 'edit') {
+          var text = args.slice(3).join(' ').trim();
+          if (!text) { out('usage: mod edit <wall|room> <id> <new text>', 't-err'); return; }
+          fields.message = text;
+        }
+        if (!wallAPI.sendAdmin) { out('wall not initialized.', 't-err'); return; }
+        out((sub === 'rm' ? 'deleting ' : 'editing ') + board + '/' + id + ' via relay ...', 't-dim', 80);
+        wallAPI.sendAdmin(sub === 'rm' ? 'delete' : 'edit', board, id, fields).then(function (res) {
+          if (res.ok) out('dispatched — the robot commits it within ~15s; the board refreshes itself.', 't-ok');
+          else out('relay said no: ' + res.error, 't-err');
+        });
+        return;
+      }
+      out('usage: mod <ls|rm|edit> <wall|room> ...', 't-err');
     }, true);
 
     var hist = [], histIdx = 0, hintIdx = 0, slRunning = false;
@@ -2544,129 +2742,335 @@
   }
 
   /* ============================================================
-     The Wall — public read from the wall repo; writes go through
-     a tiny origin-locked relay and a moderating GitHub Action.
-     No token in this page, ever.
+     The Wall (public — anyone reads AND posts) + the Observatory
+     (the room behind the puzzle; posting server-verified via the
+     solve-proof). Writes go through a tiny origin-locked relay
+     and a moderating GitHub Action. No token in this page, ever.
+     Freshness: cache-busted raw fetches, a 20s client cache,
+     optimistic "pending" render of your own post, and backoff
+     polling (6s/15s/30s/62s) until it lands.
      ============================================================ */
   function initWall() {
-    var box = doc.getElementById('wallbox');
     var postsEl = doc.getElementById('wall-posts');
     var refreshBtn = doc.getElementById('wall-refresh');
     var compose = doc.getElementById('wall-compose');
-    var lockForm = doc.getElementById('wall-lockform');
-    var ansIn = doc.getElementById('wall-answer');
     var postForm = doc.getElementById('wall-form');
     var nameIn = doc.getElementById('wall-name');
     var msgIn = doc.getElementById('wall-msg');
     var countEl = doc.getElementById('wall-count');
     var statusEl = doc.getElementById('wall-status');
-    if (!box || !postsEl) return;
 
-    var budget = 6;
-    var lastPost = 0;
+    var obsBox = doc.getElementById('obsbox');
+    var obsTitle = doc.getElementById('obs-title');
+    var obsLocked = doc.getElementById('obs-locked');
+    var obsOpen = doc.getElementById('obs-open');
+    var obsPostsEl = doc.getElementById('obs-posts');
+    var obsRefreshBtn = doc.getElementById('obs-refresh');
+    var lockForm = doc.getElementById('obs-lockform');
+    var ansIn = doc.getElementById('obs-answer');
+    var lockStatus = doc.getElementById('obs-lockstatus');
+    var obsForm = doc.getElementById('obs-form');
+    var obsNameIn = doc.getElementById('obs-name');
+    var obsMsgIn = doc.getElementById('obs-msg');
+    var obsCountEl = doc.getElementById('obs-count');
+    var obsStatusEl = doc.getElementById('obs-status');
+    if (!postsEl) return;
 
-    function status(t, cls) {
-      if (!statusEl) return;
-      statusEl.textContent = t;
-      statusEl.className = 'wall-status ' + (cls || 't-dim');
-    }
-    function setRows(rows) {
-      postsEl.textContent = '';
-      for (var i = 0; i < rows.length; i++) {
-        var r = doc.createElement('span');
-        r.className = 'row ' + (rows[i][1] || '');
-        r.textContent = rows[i][0];
-        postsEl.appendChild(r);
+    var budget = 16;   /* raw fetches per visit, both boards + polls */
+    var lastPost = 0;  /* 30s client gate, shared across boards */
+    var canFetch = !!(window.fetch && window.Promise);
+    var ID_OK = /^[0-9a-f]{4,16}$/;
+
+    var B = {
+      wall: {
+        raw: WALL_RAW, el: postsEl, key: 'wall:data', max: 140,
+        statusEl: statusEl, posts: null, pending: null, timers: [],
+        empty: 'the wall is freshly painted — no posts yet. be the first.',
+        label: 'wall', file: 'wall/data.json'
+      },
+      room: {
+        raw: ROOM_RAW, el: obsPostsEl, key: 'room:data', max: 280,
+        statusEl: obsStatusEl, posts: null, pending: null, timers: [],
+        empty: 'the observatory is silent. you are early — say something.',
+        label: 'observatory', file: 'wall/room.json'
       }
+    };
+
+    function status(el, t, cls) {
+      if (!el) return;
+      el.textContent = t;
+      el.className = 'wall-status ' + (cls || 't-dim');
     }
-    function render(posts) {
-      var ok = [], i;
-      for (i = 0; i < (posts || []).length; i++) {
-        var p = posts[i];
-        if (p && typeof p === 'object' && typeof p.message === 'string' && p.message.replace(/\s/g, '').length) ok.push(p);
+    function note(b, t, cls) { status(b.statusEl, t, cls); }
+    function row(el, txt, cls) {
+      var r = doc.createElement('span');
+      r.className = 'row ' + (cls || '');
+      r.textContent = txt;
+      el.appendChild(r);
+      return r;
+    }
+    function sanitize(p, max) {
+      return {
+        id: (typeof p.id === 'string' && ID_OK.test(p.id)) ? p.id : '',
+        name: gh.clean(String(p.name || 'anonymous')).replace(/\s+/g, ' ').trim().slice(0, 24) || 'anonymous',
+        message: gh.clean(String(p.message)).replace(/\s+/g, ' ').trim().slice(0, max),
+        ts: p.ts || p.at || 0,
+        edited: p.edited || 0
+      };
+    }
+    function usable(p) {
+      return p && typeof p === 'object' && typeof p.message === 'string' && p.message.replace(/\s/g, '').length;
+    }
+    function clearTimers(b) {
+      for (var i = 0; i < b.timers.length; i++) clearTimeout(b.timers[i]);
+      b.timers = [];
+    }
+    function schedulePolls(bn) {
+      var b = B[bn];
+      clearTimers(b);
+      [6000, 15000, 30000, 62000].forEach(function (ms) {
+        b.timers.push(setTimeout(function () { load(bn, true, true); }, ms));
+      });
+    }
+
+    function render(bn) {
+      var b = B[bn];
+      if (!b.el) return;
+      var src = [], i;
+      for (i = 0; i < (b.posts || []).length; i++) {
+        if (usable(b.posts[i])) src.push(sanitize(b.posts[i], b.max));
       }
-      ok = ok.slice(-30).reverse();
-      postsEl.textContent = '';
-      if (!ok.length) {
-        setRows([['the wall is freshly painted — no posts yet. be the first.', 't-dim']]);
+      if (b.pending) {
+        for (i = 0; i < src.length; i++) {
+          if (src[i].name === b.pending.name && src[i].message === b.pending.message) {
+            b.pending = null;
+            clearTimers(b);
+            note(b, 'your post is on the ' + b.label + '.', 't-ok');
+            break;
+          }
+        }
+      }
+      var shown = src.slice(-30).reverse();
+      b.el.textContent = '';
+      var admin = !!adminKey();
+      if (b.pending) {
+        var hp = doc.createElement('span');
+        hp.className = 'row';
+        mkSeg(hp, b.pending.name, 'wp-name');
+        mkSeg(hp, '  ·  ' + (Date.now() > b.pending.deadline
+          ? 'not landed — the robot may have filtered it'
+          : 'pending moderation…'), 'wp-pending');
+        b.el.appendChild(hp);
+        row(b.el, '  ' + b.pending.message, 'wp-msg');
+        b.el.appendChild(doc.createElement('span')).className = 'row';
+      }
+      if (!shown.length) {
+        if (!b.pending) row(b.el, b.empty, 't-dim');
         return;
       }
-      var head = doc.createElement('span');
-      head.className = 'row t-dim';
-      head.textContent = '· ' + ok.length + (ok.length === 30 ? '+' : '') + ' posts · newest first ·';
-      postsEl.appendChild(head);
-      postsEl.appendChild(doc.createElement('span')).className = 'row';
-      for (i = 0; i < ok.length; i++) {
-        var p = ok[i];
-        var name = gh.clean(String(p.name || 'anonymous')).replace(/\s+/g, ' ').trim().slice(0, 24) || 'anonymous';
-        var msg = gh.clean(String(p.message)).replace(/\s+/g, ' ').trim().slice(0, 140);
-        var when = p.ts || p.at || p.t || p.time || p.date || '';
+      row(b.el, '· ' + shown.length + (shown.length === 30 ? '+' : '') + ' posts · newest first ·', 't-dim');
+      b.el.appendChild(doc.createElement('span')).className = 'row';
+      for (i = 0; i < shown.length; i++) {
+        var q = shown[i];
         var h = doc.createElement('span');
         h.className = 'row';
-        mkSeg(h, name, 'wp-name');
-        var ago = when ? gh.ago(when) : '';
+        mkSeg(h, q.name, 'wp-name');
+        var ago = q.ts ? gh.ago(q.ts) : '';
         if (ago) mkSeg(h, '  ·  ' + ago, 't-time');
-        postsEl.appendChild(h);
-        var m = doc.createElement('span');
-        m.className = 'row wp-msg';
-        m.textContent = '  ' + msg;
-        postsEl.appendChild(m);
-        postsEl.appendChild(doc.createElement('span')).className = 'row';
+        if (q.edited) mkSeg(h, ' · edited', 't-dim');
+        if (admin && q.id) {
+          mkSeg(h, '  [' + q.id + ']', 'wp-id');
+          h.appendChild(mkDelBtn(bn, q.id));
+        }
+        b.el.appendChild(h);
+        row(b.el, '  ' + q.message, 'wp-msg');
+        b.el.appendChild(doc.createElement('span')).className = 'row';
       }
     }
-    function load(force) {
-      if (!window.fetch || !window.Promise) {
-        setRows([['the wall needs a newer browser to load here — the raw feed lives at github.com/zyads/wall.', 't-dim']]);
-        return;
+
+    function mkDelBtn(bn, id) {
+      var del = doc.createElement('button');
+      del.type = 'button';
+      del.className = 'wp-del';
+      del.textContent = '✕ delete';
+      del.addEventListener('click', function () {
+        if (del.textContent !== 'sure?') {
+          del.textContent = 'sure?';
+          setTimeout(function () { del.textContent = '✕ delete'; }, 2500);
+          return;
+        }
+        del.disabled = true;
+        sendAdmin('delete', bn, id, {}).then(function (res) {
+          note(B[bn], res.ok
+            ? 'delete dispatched — gone from the ' + B[bn].label + ' within ~15s.'
+            : 'relay said no: ' + res.error, res.ok ? 't-ok' : 't-err');
+          if (res.ok) schedulePolls(bn); else del.disabled = false;
+        });
+      });
+      return del;
+    }
+
+    function load(bn, force, quiet) {
+      var b = B[bn];
+      if (!b.el) return Promise.resolve([]);
+      if (!canFetch) {
+        b.el.textContent = '';
+        row(b.el, 'this board needs a newer browser — the raw feed lives at github.com/zyads/wall.', 't-dim');
+        return Promise.resolve([]);
       }
       if (!force) {
         try {
-          var hit = JSON.parse(sessionStorage.getItem('wall:data'));
-          if (hit && Date.now() - hit.t < 60000) { render(hit.p); return; }
-        } catch (e) { /* fall through */ }
+          var hit = JSON.parse(sessionStorage.getItem(b.key));
+          if (hit && Date.now() - hit.t < 20000) {
+            b.posts = hit.p;
+            render(bn);
+            return Promise.resolve(b.posts || []);
+          }
+        } catch (e) { /* fall through to network */ }
       }
       if (budget <= 0) {
-        status('refresh budget spent for this visit — the wall is being polite to the CDN.', 't-err');
-        return;
+        if (!quiet) note(b, 'refresh budget spent for this visit — being polite to the CDN.', 't-err');
+        return Promise.resolve(b.posts || []);
       }
       budget--;
-      setRows([['fetching wall/data.json ...', 't-dim']]);
-      fetch(WALL_RAW, { cache: 'no-store' }).then(function (r) {
+      if (!b.posts && !quiet) {
+        b.el.textContent = '';
+        row(b.el, 'fetching ' + b.file + ' ...', 't-dim');
+      }
+      /* the changing query param defeats the raw CDN's ~5 min cache:
+         its key includes the full URL. never show a stale board as fresh. */
+      return fetch(b.raw + '?x=' + Date.now(), { cache: 'no-store' }).then(function (r) {
         if (r.status === 404) { var e = new Error('nf'); e.nf = true; throw e; }
         if (!r.ok) throw new Error('http ' + r.status);
         return r.json();
       }).then(function (data) {
         var posts = (data && data.posts) || (data instanceof Array ? data : []);
         if (!(posts instanceof Array)) posts = [];
-        try { sessionStorage.setItem('wall:data', JSON.stringify({ t: Date.now(), p: posts })); } catch (e) { /* fine */ }
-        render(posts);
+        b.posts = posts;
+        try { sessionStorage.setItem(b.key, JSON.stringify({ t: Date.now(), p: posts })); } catch (e) { /* fine */ }
+        render(bn);
+        return posts;
       }).catch(function (err) {
-        if (err && err.nf) setRows([['the wall repo exists but has nothing to say yet — freshly painted. come back soon.', 't-dim']]);
-        else setRows([['wall unreachable — offline, or the repo is not born yet. the feed reads straight from github.com/zyads/wall.', 't-err']]);
+        if (b.posts) { render(bn); return b.posts; }
+        b.el.textContent = '';
+        if (err && err.nf) row(b.el, 'nothing here yet — freshly painted.', 't-dim');
+        else row(b.el, 'unreachable — offline, or github is blinking. the raw feed lives at github.com/zyads/wall.', 't-err');
+        return [];
       });
     }
-    function setUnlocked(v) {
-      if (lockForm) lockForm.hidden = !!v;
-      if (postForm) postForm.hidden = !v;
-    }
-    wallAPI.setUnlocked = setUnlocked;
-    wallAPI.refresh = function () { load(true); };
 
+    function relay(bodyObj) {
+      /* plain fetch, no custom headers: no preflight, no credential */
+      return fetch(WALL_ENDPOINT, { method: 'POST', body: JSON.stringify(bodyObj) }).then(function (r) {
+        return r.json().then(function (j) {
+          return { ok: r.ok, error: (j && j.error) || ('http ' + r.status) };
+        }, function () {
+          return { ok: r.ok, error: 'http ' + r.status };
+        });
+      }).catch(function () {
+        return { ok: false, error: 'relay unreachable — offline, or try again in a minute' };
+      });
+    }
+
+    function sendAdmin(action, bn, id, fields) {
+      var body = { action: action, board: bn === 'room' ? 'room' : 'wall', id: id, key: adminKey() };
+      if (fields && fields.message) body.message = fields.message;
+      if (fields && fields.name) body.name = fields.name;
+      return relay(body);
+    }
+
+    /* -> Promise<bool posted> */
+    function postTo(bn, name, msg) {
+      var b = B[bn];
+      if (!WALL_ENDPOINT) { note(b, 'the write relay is warming up (not deployed) — check back soon.', 't-err'); return Promise.resolve(false); }
+      if (Date.now() - lastPost < 30000) { note(b, 'easy there — one post per 30 seconds.', 't-err'); return Promise.resolve(false); }
+      var body = { name: name, message: msg };
+      if (bn === 'room') {
+        var proof = roomProof();
+        if (!proof) { note(b, 'no solve-proof in this session — the door re-locks each session. unlock again.', 't-err'); return Promise.resolve(false); }
+        body.board = 'room';
+        body.proof = proof;
+      }
+      note(b, 'sending to the relay ...', 't-dim');
+      return relay(body).then(function (res) {
+        if (!res.ok) { note(b, 'relay said no: ' + res.error, 't-err'); return false; }
+        lastPost = Date.now();
+        b.pending = { name: name || 'anonymous', message: msg, deadline: Date.now() + 75000 };
+        render(bn);
+        note(b, 'accepted — a robot is moderating. it lands in ~15s; this board is polling for it.', 't-ok');
+        schedulePolls(bn);
+        return true;
+      });
+    }
+
+    /* ------- public wall wiring ------- */
     if (compose) compose.hidden = false;
     if (refreshBtn) {
       refreshBtn.hidden = false;
-      refreshBtn.addEventListener('click', function () { load(true); });
+      refreshBtn.addEventListener('click', function () { load('wall', true); });
     }
-    if (isUnlocked()) {
-      setUnlocked(true);
-      status('key remembered from earlier this session — the wall is open.', 't-ok');
-    } else {
-      setUnlocked(false);
+    if (msgIn && countEl) {
+      msgIn.addEventListener('input', function () { countEl.textContent = msgIn.value.length + '/140'; });
+    }
+    if (postForm && msgIn) {
+      postForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var msg = gh.clean(msgIn.value).replace(/\s+/g, ' ').trim().slice(0, 140);
+        var name = gh.clean(nameIn ? nameIn.value : '').replace(/\s+/g, ' ').trim().slice(0, 24);
+        if (!msg) { note(B.wall, 'write something first — you have 140 characters of anything.', 't-err'); return; }
+        postTo('wall', name, msg).then(function (posted) {
+          if (posted) {
+            msgIn.value = '';
+            if (countEl) countEl.textContent = '0/140';
+          }
+        });
+      });
     }
 
-    if (msgIn && countEl) {
-      msgIn.addEventListener('input', function () {
-        countEl.textContent = msgIn.value.length + '/140';
+    /* ------- the observatory ------- */
+    function openRoom(celebrate) {
+      if (!obsBox) return;
+      if (obsLocked) obsLocked.hidden = true;
+      if (obsOpen) obsOpen.hidden = false;
+      if (obsTitle) obsTitle.textContent = 'zyad@observatory:~ — open · solvers only';
+      if (obsRefreshBtn) obsRefreshBtn.hidden = false;
+      if (celebrate) {
+        obsBox.classList.add('granted');
+        note(B.room, 'ACCESS GRANTED — 280 characters up here, and only solvers can read the room into being. a robot still moderates.', 't-grant');
+        try { obsBox.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); } catch (e) { /* fine */ }
+      }
+      load('room', !!celebrate);
+    }
+    wallAPI.openRoom = openRoom;
+    wallAPI.refresh = function (bn) { load(bn === 'room' ? 'room' : 'wall', true); };
+    wallAPI.adminChanged = function () { render('wall'); render('room'); };
+    wallAPI.list = function (bn) {
+      bn = bn === 'room' ? 'room' : 'wall';
+      var max = B[bn].max;
+      return load(bn, true, true).then(function (posts) {
+        var outp = [], i;
+        for (i = 0; i < posts.length; i++) if (usable(posts[i])) outp.push(sanitize(posts[i], max));
+        return outp;
+      });
+    };
+    wallAPI.sendAdmin = sendAdmin;
+
+    if (obsRefreshBtn) obsRefreshBtn.addEventListener('click', function () { load('room', true); });
+    if (obsMsgIn && obsCountEl) {
+      obsMsgIn.addEventListener('input', function () { obsCountEl.textContent = obsMsgIn.value.length + '/280'; });
+    }
+    if (obsForm && obsMsgIn) {
+      obsForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var msg = gh.clean(obsMsgIn.value).replace(/\s+/g, ' ').trim().slice(0, 280);
+        var name = gh.clean(obsNameIn ? obsNameIn.value : '').replace(/\s+/g, ' ').trim().slice(0, 24);
+        if (!msg) { note(B.room, 'write something first — you earned 280 characters.', 't-err'); return; }
+        postTo('room', name, msg).then(function (posted) {
+          if (posted) {
+            obsMsgIn.value = '';
+            if (obsCountEl) obsCountEl.textContent = '0/280';
+          }
+        });
       });
     }
     if (lockForm && ansIn) {
@@ -2674,45 +3078,24 @@
         e.preventDefault();
         var guess = ansIn.value;
         if (!guess.replace(/\s/g, '')) return;
-        status('checking ...', 't-dim');
-        checkAnswer(guess).then(function (ok) {
+        status(lockStatus, 'checking ...', 't-dim');
+        checkAnswer(guess).then(function (proof) {
           ansIn.value = '';
-          if (ok === null) { status('this browser lacks WebCrypto, so the lock cannot be checked here.', 't-err'); return; }
-          if (!ok) { status(snark(), 't-err'); return; }
-          grantAccess();
-          status('ACCESS GRANTED — the wall is yours. be kind; a robot moderates.', 't-grant');
-        });
-      });
-    }
-    if (postForm && msgIn) {
-      postForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var msg = gh.clean(msgIn.value).replace(/\s+/g, ' ').trim().slice(0, 140);
-        var name = gh.clean(nameIn ? nameIn.value : '').replace(/\s+/g, ' ').trim().slice(0, 24);
-        if (!msg) { status('write something first — you have 140 characters of anything.', 't-err'); return; }
-        if (!WALL_ENDPOINT) {
-          status('unlocked — but the write relay is still warming up (not deployed yet). your key is saved for this session; check back soon.', 't-err');
-          return;
-        }
-        if (Date.now() - lastPost < 30000) { status('easy there — one post per 30 seconds.', 't-err'); return; }
-        status('sending to the relay ...', 't-dim');
-        /* plain fetch, no custom headers: no preflight, no credential — the relay holds the only key */
-        fetch(WALL_ENDPOINT, { method: 'POST', body: JSON.stringify({ name: name, message: msg }) }).then(function (r) {
-          if (!r.ok) throw new Error('http ' + r.status);
-          lastPost = Date.now();
-          msgIn.value = '';
-          if (countEl) countEl.textContent = '0/140';
-          status('posted — a robot is moderating it now. it lands on the wall within a minute or so; refresh when ready.', 't-ok');
-          setTimeout(function () { load(true); }, 45000);
-        }).catch(function () {
-          status('relay unreachable or refused — try again in a minute.', 't-err');
+          if (proof === null) { status(lockStatus, 'this browser lacks WebCrypto, so the lock cannot be checked here.', 't-err'); return; }
+          if (!proof) { status(lockStatus, snark(), 't-err'); return; }
+          grantAccess(proof);
         });
       });
     }
 
+    if (isUnlocked()) {
+      openRoom(false);
+      note(B.room, 'key remembered from earlier this session — the observatory is open.', 't-ok');
+    }
+
     /* eager, not lazy: an instant jump (End key, reduced motion) can skip
        IntersectionObserver entirely — and this is one cached, budgeted fetch */
-    load(false);
+    load('wall', false);
   }
 
   /* ============================================================ */
@@ -2731,7 +3114,7 @@
     try {
       console.log('%czyad@shehadeh:~$ %cwhoami', 'color:#38e0ff;font-weight:bold', 'color:#e9edf5');
       console.log('%cSoftware engineer — developer platforms, build systems, applied AI tooling.\nEverything on this page is hand-rolled vanilla JS. The only requests leave for api.github.com and the wall repo, read-only. View source, it is all here.', 'color:#9aa3b8');
-      console.log('%cps: the terminal in §04 answers to more than `help` admits. `hint` opens the trail — and the truly curious leave a trace.', 'color:#5f6880;font-style:italic');
+      console.log('%cps: the terminal in §06 answers to more than `help` admits. `hint` opens the trail — and the truly curious leave a trace. at the end of it: a room beneath the wall.', 'color:#5f6880;font-style:italic');
     } catch (e) { /* no console, no problem */ }
   }
 
