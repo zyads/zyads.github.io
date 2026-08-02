@@ -23,6 +23,27 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Zyad Shehadeh</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Zyad Shehadeh",
+  "jobTitle": "Software Engineer",
+  "url": "https://zyads.github.io/",
+  "sameAs": [
+    "https://github.com/zyads",
+    "https://linkedin.com/in/zyads"
+  ],
+  "alumniOf": { "@type": "CollegeOrUniversity", "name": "University of Michigan" },
+  "knowsAbout": [
+    "Build systems", "Bazel", "CI/CD", "Artifact provenance",
+    "Developer platforms", "Dependency graphs",
+    "LLM agent tooling", "Model Context Protocol",
+    "Distributed systems", "Observability",
+    "Python", "C++", "Go", "Docker", "Kubernetes"
+  ]
+}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2306080f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%2338e0ff' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
 <script>document.documentElement.className += ' js';</script>
 <style>
@@ -368,6 +389,33 @@
   }
   .post-body .kw { color: var(--c3); }
   .post-body .cm { color: var(--faint); font-style: italic; }
+  .post-link {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    border: 1px solid var(--line); border-radius: 16px;
+    background: var(--card);
+    padding: 1.3rem 1.5rem;
+    color: var(--text);
+    transition: border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+  .post-link:hover {
+    text-decoration: none;
+    border-color: rgba(56,224,255,0.35);
+    box-shadow: 0 18px 50px -22px rgba(56,224,255,0.2);
+  }
+  .post-link h3 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+  .post-link:hover h3 { color: var(--c1); }
+  .post-link .when {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem; color: var(--faint); letter-spacing: 0.04em;
+    margin-left: auto;
+  }
+  .post-link .teaser { flex-basis: 100%; color: var(--muted); font-size: 0.94rem; margin-top: 0.15rem; }
+  .all-posts {
+    margin-top: 1.5rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    min-height: 44px;
+    font-weight: 600; font-size: 0.95rem;
+  }
 
   /* ---------- project cards ---------- */
   .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; perspective: 1200px; }
@@ -872,69 +920,30 @@
     <div class="wrap">
       <div class="sec-head reveal"><span class="idx">05</span><h2 id="writing-h">Writing</h2></div>
 
-      <!-- ADD A POST: copy this block, newest first. Nothing else to do — no build step.
-      <details class="post reveal">
-        <summary>
-          <h3>Your title here</h3>
-          <span class="when">Mon YYYY</span>
-          <p class="teaser">One line that makes someone want to open it.</p>
-        </summary>
-        <div class="post-body">
-          <p>Paragraphs go here.</p>
-          <pre><code>code blocks look like this</code></pre>
-        </div>
-      </details>
-      -->
+      <!-- Posts are standalone pages now. To add one: create posts/<slug>.html
+           (copy an existing post — its head comment walks through every field),
+           add it to blog.html and sitemap.xml, then add a row here (newest
+           first, keep it to the latest three). -->
 
       <div class="posts">
-        <details class="post reveal">
-          <summary>
-            <h3>Storing Tree Relationships in a Table</h3>
-            <span class="when">Jan 2024</span>
-            <p class="teaser">Three ways to put a tree in a relational database, and what each one costs you.</p>
-          </summary>
-          <div class="post-body">
-            <p>Storing hierarchical data, such as tree structures, in a relational database can be achieved through various models. Each has its own characteristics, benefits and drawbacks. Here are three common approaches.</p>
-
-            <h4>Adjacency List Model</h4>
-            <p>The simplest way to represent tree-like data. Add a <code>parent_id</code> column to each row referencing the <code>id</code> of the parent node. Straightforward, but less efficient as the tree gets deeper.</p>
-            <pre><code><span class="kw">CREATE TABLE</span> tree (
-    node_id  INT PRIMARY KEY,
-    parent_id INT NULL REFERENCES tree (node_id)
-);</code></pre>
-            <h5>Pros</h5>
-            <ul><li>Simple implementation.</li><li>Suitable for shallow trees.</li></ul>
-            <h5>Cons</h5>
-            <ul><li>Query performance degrades with tree depth.</li><li>No built-in support for traversing beyond immediate children.</li></ul>
-
-            <h4>Path Enumeration</h4>
-            <p>Instead of storing only the parent ID, store the entire path from the root to the current node. Great for pulling all ancestors of a node at once; painful on updates, since moving a node means rewriting every path that contains it.</p>
-            <pre><code><span class="kw">CREATE TABLE</span> tree (
-    node_id INT PRIMARY KEY,
-    path    VARCHAR(255)  <span class="cm">-- "1.2.3" = node 3 under node 2 under node 1</span>
-);</code></pre>
-            <h5>Pros</h5>
-            <ul><li>Efficient for ancestor and subtree queries.</li></ul>
-            <h5>Cons</h5>
-            <ul><li>Updates are complex and potentially costly.</li></ul>
-
-            <h4>Nested Set Model</h4>
-            <p>Represent the tree as nested sets: each node gets a left and right value marking its position. Supports efficient range queries, but insertions and deletions require carefully renumbering those values.</p>
-            <pre><code><span class="kw">CREATE TABLE</span> tree (
-    node_id     INT PRIMARY KEY,
-    left_value  INT,
-    right_value INT
-);</code></pre>
-            <h5>Pros</h5>
-            <ul><li>Efficient range queries and subtree reads.</li></ul>
-            <h5>Cons</h5>
-            <ul><li>Left/right values must be recalculated on every structural change.</li></ul>
-
-            <h4>Conclusion</h4>
-            <p>The right model depends on the depth of your tree, the queries you run most, and how much update complexity you can stomach. Each one trades simplicity, query efficiency and maintenance overhead against the others.</p>
-          </div>
-        </details>
+        <a class="post-link reveal" href="posts/context-is-a-budget.html">
+          <h3>Context Is a Budget, Not a Bucket</h3>
+          <span class="when">Jun 2026</span>
+          <p class="teaser">Designing tool interfaces for LLM agents &mdash; the cheapest token is the one never emitted.</p>
+        </a>
+        <a class="post-link reveal" style="--d:0.08s" href="posts/signing-without-hermeticity-is-theater.html">
+          <h3>Signing Without Hermeticity Is Theater</h3>
+          <span class="when">Mar 2026</span>
+          <p class="teaser">What &ldquo;this artifact came from that commit&rdquo; actually requires, and why a signature alone proves almost nothing.</p>
+        </a>
+        <a class="post-link reveal" style="--d:0.16s" href="posts/dependency-graph-is-the-real-artifact.html">
+          <h3>The Dependency Graph Is the Real Artifact</h3>
+          <span class="when">Jan 2026</span>
+          <p class="teaser">Blast radius, cycle ratchets, and critical paths &mdash; what a build graph tells you that the file tree never will.</p>
+        </a>
       </div>
+
+      <a class="all-posts reveal" href="blog.html">All posts <span aria-hidden="true">&rarr;</span></a>
     </div>
   </section>
 
@@ -2000,7 +2009,7 @@
           '   range queries; every structural change renumbers.',
           ' ',
           'verdict: choose by depth, dominant queries, and how much',
-          'update complexity you can stomach. full post: §05 Writing.'
+          'update complexity you can stomach. full post: /posts/storing-tree-relationships-in-a-table.html'
         ]
       }
     };
